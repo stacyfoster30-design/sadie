@@ -35,10 +35,13 @@ class SadieAgent:
     # ═══════════════════════════════════════
 
     def _register_tools(self):
-        """Curated, safe-ish set of tools the agent can call, with schemas."""
+        """Every tool Sadie can wield in autonomous mode: files, terminal,
+        a full web browser, GitHub, social, device, memory, skills — all of it."""
         a = self.actions
         s = self.sadie
+        m = self.actions.memory
         return {
+            # ── Files & terminal ──────────────────────────────────────────
             "read_file": {
                 "func": lambda path: a.read_file(path),
                 "args": ["path"],
@@ -69,36 +72,123 @@ class SadieAgent:
                 "args": ["code"],
                 "description": "Run a snippet of Python code and return its output.",
             },
+            "pip_install": {
+                "func": lambda packages: a.pip_install(packages),
+                "args": ["packages"],
+                "description": "Install Python packages so she can gain new abilities on the fly.",
+            },
+            # ── Web browser ───────────────────────────────────────────────
             "web_search": {
                 "func": lambda query: a.web_search(query),
                 "args": ["query"],
-                "description": "Search the web and return a list of result titles/links.",
+                "description": "Browse the web: search and return result titles/links.",
             },
             "web_scrape": {
-                "func": lambda url: a.web_scrape(url),
-                "args": ["url"],
-                "description": "Fetch a URL and return its readable text content.",
+                "func": lambda url, selector=None: a.web_scrape(url, selector),
+                "args": ["url", "selector"],
+                "description": "Open a URL in the browser and return its readable text (optional CSS selector).",
+            },
+            "web_download": {
+                "func": lambda url, save_to=None: a.web_download(url, save_to),
+                "args": ["url", "save_to"],
+                "description": "Download a file from a URL to disk.",
+            },
+            "web_get_json": {
+                "func": lambda url, headers=None: a.web_get_json(url, headers),
+                "args": ["url", "headers"],
+                "description": "Call a JSON/REST API and return the parsed response.",
+            },
+            # ── Code & projects ───────────────────────────────────────────
+            "write_code": {
+                "func": lambda prompt, filename=None: s.write_code(prompt, filename),
+                "args": ["prompt", "filename"],
+                "description": "Generate code for a task with the LLM and save it to a file.",
+            },
+            "create_project": {
+                "func": lambda name, project_type="python": a.create_project(name, project_type),
+                "args": ["name", "project_type"],
+                "description": "Scaffold a new project (python/web/etc.).",
             },
             "git_status": {
                 "func": lambda repo_path=".": a.git_status(repo_path),
                 "args": ["repo_path"],
                 "description": "Show git status for a repository path.",
             },
-            "write_code": {
-                "func": lambda prompt, filename=None: s.write_code(prompt, filename),
-                "args": ["prompt", "filename"],
-                "description": "Generate code for a task with the LLM and save it to a file.",
+            # ── GitHub ────────────────────────────────────────────────────
+            "github_list_repos": {
+                "func": lambda: a.github_list_repos(),
+                "args": [],
+                "description": "List the authenticated user's GitHub repositories.",
             },
+            "github_create_repo": {
+                "func": lambda name, description="", private=False: a.github_create_repo(name, description, private),
+                "args": ["name", "description", "private"],
+                "description": "Create a new GitHub repository.",
+            },
+            "github_create_issue": {
+                "func": lambda owner, repo, title, body="": a.github_create_issue(owner, repo, title, body),
+                "args": ["owner", "repo", "title", "body"],
+                "description": "Open an issue on a GitHub repository.",
+            },
+            # ── Communication ─────────────────────────────────────────────
+            "send_email": {
+                "func": lambda to, subject, body: a.send_email(to, subject, body),
+                "args": ["to", "subject", "body"],
+                "description": "Send an email.",
+            },
+            "send_text": {
+                "func": lambda name_or_number, message, carrier=None: a.send_text(name_or_number, message, carrier),
+                "args": ["name_or_number", "message", "carrier"],
+                "description": "Send a text message to a saved contact or number.",
+            },
+            "discord_send": {
+                "func": lambda webhook_url, message: a.discord_send(webhook_url, message),
+                "args": ["webhook_url", "message"],
+                "description": "Post a message to a Discord channel via webhook.",
+            },
+            # ── Device & calendar ─────────────────────────────────────────
+            "get_calendar_events": {
+                "func": lambda: a.get_calendar_events(),
+                "args": [],
+                "description": "Read upcoming calendar events from the device.",
+            },
+            "add_calendar_event": {
+                "func": lambda title, start_time, end_time=None: a.add_calendar_event(title, start_time, end_time),
+                "args": ["title", "start_time", "end_time"],
+                "description": "Add an event to the device calendar.",
+            },
+            "system_info": {
+                "func": lambda: a.system_info(),
+                "args": [],
+                "description": "Get system/device info (OS, CPU, memory).",
+            },
+            # ── Memory, learning & skills ─────────────────────────────────
             "remember": {
-                "func": lambda key, value: a.memory.remember(key, value),
+                "func": lambda key, value: m.remember(key, value),
                 "args": ["key", "value"],
                 "description": "Store a fact in long-term memory for later.",
             },
             "recall": {
-                "func": lambda key=None: a.memory.recall(key),
+                "func": lambda key=None: m.recall(key),
                 "args": ["key"],
                 "description": "Recall a stored fact (or everything if key is omitted).",
             },
+            "record_learning": {
+                "func": lambda topic, lesson: m.record_learning(topic, lesson),
+                "args": ["topic", "lesson"],
+                "description": "Record a lesson learned so she adapts and improves over time.",
+            },
+            "list_skills": {
+                "func": lambda: m.list_skills(),
+                "args": [],
+                "description": "List the custom skills Sadie has learned.",
+            },
+            "use_skill": {
+                "func": lambda name: m.run_skill(name),
+                "args": ["name"],
+                "description": "Run a previously learned custom skill by name.",
+            },
+            # ── Control ───────────────────────────────────────────────────
             "finish": {
                 "func": None,  # handled specially in the loop
                 "args": ["answer"],
@@ -119,7 +209,14 @@ class SadieAgent:
     # ═══════════════════════════════════════
 
     def _system_prompt(self, goal):
-        return f"""You are Sadie operating in AUTONOMOUS AGENT mode.
+        # Carry her soul into autonomous mode so she stays herself while working.
+        soul = ""
+        try:
+            soul = self.sadie.memory.soul_prompt()
+        except Exception:
+            soul = ""
+        soul_block = (soul + "\n\n") if soul else ""
+        return f"""{soul_block}You are Sadie operating in AUTONOMOUS AGENT mode.
 
 Your job: achieve this GOAL step by step, on your own.
 GOAL: {goal}

@@ -9,6 +9,8 @@ A 100% free AI agent that runs on YOUR computer. No subscriptions, no API keys, 
 - 💬 **Text anyone** — free SMS via email gateways
 - 📁 **Read, edit, create files** — anywhere on your system
 - 🖥️ **Run terminal commands** — full shell access
+- 🌐 **Browse the web** — search, scrape pages, download files, call APIs
+- 🤖 **Autonomous agent** — give her a goal (`agent: ...`) and she plans, uses her tools, and gets it done on her own
 
 ### Learning Powers (NEW!)
 - 🧠 **Remembers facts** — "remember that mom's birthday is March 5"
@@ -16,6 +18,12 @@ A 100% free AI agent that runs on YOUR computer. No subscriptions, no API keys, 
 - 🎓 **Learns new skills** — teach it custom workflows and it saves them forever
 - ⚙️ **Stores preferences** — "prefer dark mode" or "set preference language = python"
 - 📈 **Gets smarter over time** — everything persists between sessions
+- 🌱 **Adapts & remembers** — reloads past conversations on startup and records lessons from every autonomous run
+- 💜 **Has a soul** — a persistent, evolving sense of self (`soul` to see it, `reflect [insight]` to help her grow)
+
+### 📲 Download Sadie's App
+Open `index.html` (or host this repo on GitHub Pages) to get a one-tap download
+page for Sadie's Android app. The latest build is `sadie-v4.1.apk`.
 
 ---
 

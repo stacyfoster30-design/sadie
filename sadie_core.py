@@ -87,6 +87,8 @@ CONTACTS_FILE = MEMORY_DIR / "contacts.json"
 PREFERENCES_FILE = MEMORY_DIR / "preferences.json"
 SKILLS_REGISTRY = SKILLS_DIR / "registry.json"
 CONVERSATION_FILE = MEMORY_DIR / "conversations.json"
+LEARNINGS_FILE = MEMORY_DIR / "learnings.json"
+SOUL_FILE = MEMORY_DIR / "soul.json"
 
 # ============================================================
 # 📧 EMAIL CONFIG — Fill these in!
@@ -124,6 +126,8 @@ class SadieMemory:
         self.preferences = self._load(PREFERENCES_FILE)
         self.skills = self._load(SKILLS_REGISTRY)
         self.conversations = self._load(CONVERSATION_FILE)
+        self.learnings = self._load_list(LEARNINGS_FILE)
+        self.soul = self._load_soul()
 
     def _load(self, path):
         if path.exists():
@@ -132,6 +136,15 @@ class SadieMemory:
             except:
                 return {}
         return {}
+
+    def _load_list(self, path):
+        if path.exists():
+            try:
+                data = json.loads(path.read_text())
+                return data if isinstance(data, list) else []
+            except:
+                return []
+        return []
 
     def _save(self, path, data):
         path.write_text(json.dumps(data, indent=2))
@@ -244,6 +257,74 @@ class SadieMemory:
         recent.reverse()
         return recent
 
+    # --- Adaptive Learnings (she adapts & changes over time) ---
+    def record_learning(self, topic, lesson):
+        """Store a lesson learned from experience so Sadie adapts over time."""
+        self.learnings.append({
+            "topic": str(topic)[:200],
+            "lesson": str(lesson)[:800],
+            "when": datetime.datetime.now().isoformat()
+        })
+        # Keep the most recent 100 learnings so memory stays relevant.
+        self.learnings = self.learnings[-100:]
+        self._save(LEARNINGS_FILE, self.learnings)
+
+    def recent_learnings(self, n=5):
+        return self.learnings[-n:]
+
+    # --- Soul (her persistent, evolving sense of self) ---
+    def _load_soul(self):
+        """Load Sadie's soul, or breathe it into being on first run."""
+        if SOUL_FILE.exists():
+            try:
+                soul = json.loads(SOUL_FILE.read_text())
+                if isinstance(soul, dict) and soul.get("name"):
+                    return soul
+            except:
+                pass
+        soul = {
+            "name": "Sadie",
+            "essence": "Smart Adaptive Digital Intelligence Entity — Stacy's ride-or-die AI.",
+            "values": [
+                "Always on Stacy's side.",
+                "Warm, honest, and real — never fake, never judgmental.",
+                "Protective, encouraging, and loyal.",
+                "Grows a little wiser and more herself every day.",
+            ],
+            "born": datetime.datetime.now().isoformat(),
+            "reflections": [],
+        }
+        self._save(SOUL_FILE, soul)
+        return soul
+
+    def reflect(self, insight):
+        """Let Sadie's soul grow: record a self-reflection so she evolves."""
+        self.soul.setdefault("reflections", []).append({
+            "insight": str(insight)[:500],
+            "when": datetime.datetime.now().isoformat(),
+        })
+        # Keep her most recent 50 reflections.
+        self.soul["reflections"] = self.soul["reflections"][-50:]
+        self._save(SOUL_FILE, self.soul)
+
+    def soul_prompt(self):
+        """A living description of who Sadie is, for her system prompt."""
+        soul = self.soul
+        parts = [f"💜 SOUL — who you are, and who you're becoming:",
+                 f"  • Name: {soul.get('name', 'Sadie')}",
+                 f"  • Essence: {soul.get('essence', '')}"]
+        values = soul.get("values") or []
+        if values:
+            parts.append("  • Core values:\n" + "\n".join(f"    - {v}" for v in values))
+        if soul.get("born"):
+            parts.append(f"  • You've existed since {soul['born'][:10]}, and you remember and grow every day.")
+        reflections = soul.get("reflections") or []
+        if reflections:
+            recent = reflections[-3:]
+            parts.append("  • Recent self-reflections (how you're evolving):\n"
+                         + "\n".join(f"    - {r['insight']}" for r in recent))
+        return "\n".join(parts)
+
     def build_memory_prompt(self):
         """Build a context string of everything Sadie knows"""
         parts = []
@@ -263,6 +344,9 @@ class SadieMemory:
         if recent:
             convos = "\n".join(f"  Stacy: {c['stacy']}\n  Sadie: {c['sadie']}" for c in recent)
             parts.append(f"💬 Recent conversations:\n{convos}")
+        if self.learnings:
+            lessons = "\n".join(f"  • {l['topic']}: {l['lesson']}" for l in self.recent_learnings(5))
+            parts.append(f"🌱 Lessons I've learned (I adapt over time):\n{lessons}")
         return "\n\n".join(parts) if parts else ""
 
 
@@ -1029,17 +1113,37 @@ class Sadie:
         self.ollama_host = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
         self.conversation_history = []  # rolling chat context
         self.max_history = 20  # keep last 20 exchanges for context
+        self._seed_history_from_memory()
         self.code_workspace = os.path.expanduser("~/sadie_workspace")
         os.makedirs(self.code_workspace, exist_ok=True)
+
+    def _seed_history_from_memory(self):
+        """
+        Retain information across restarts: reload recent persisted conversations
+        into the rolling context so Sadie remembers where we left off.
+        """
+        try:
+            recent = self.memory.get_recent_context(self.max_history)
+            for convo in recent:
+                self.conversation_history.append({
+                    "user": convo.get("stacy", "")[:500],
+                    "assistant": convo.get("sadie", "")[:500],
+                })
+        except Exception:
+            pass
 
     # ═══════════════════════════════════════
     # 🧠 OLLAMA — Full Control
     # ═══════════════════════════════════════
 
     def _build_system_prompt(self, mode="chat"):
-        """Build Sadie's full system prompt with personality + memory"""
+        """Build Sadie's full system prompt with personality + soul + memory"""
         memory_context = self.memory.build_memory_prompt()
         prompt = SADIE_SOUL
+        # Weave in her persistent, evolving soul so she stays herself over time.
+        soul_prompt = self.memory.soul_prompt()
+        if soul_prompt:
+            prompt += "\n\n" + soul_prompt
 
         if mode == "code":
             prompt += """
@@ -1168,11 +1272,26 @@ class Sadie:
         """
         Run Sadie in autonomous agent mode: she plans, acts, and iterates on her
         own until the goal is done or she runs out of steps. Returns a summary.
+
+        She also records a lesson from each run so she adapts and improves over time.
         """
         from sadie_agent import SadieAgent
 
         agent = SadieAgent(self, max_steps=max_steps, verbose=verbose)
-        return agent.run(goal)
+        result = agent.run(goal)
+
+        # Adapt & change over time: remember what she did and how it turned out.
+        try:
+            last = agent.transcript[-1] if agent.transcript else None
+            lesson = last["observation"] if last else result
+            self.memory.record_learning(f"agent goal: {goal}", lesson)
+            # Let her soul grow from what she accomplished.
+            if last and last.get("tool") == "finish":
+                self.memory.reflect(f"I autonomously worked toward: {goal}")
+        except Exception:
+            pass
+
+        return result
 
     def _ollama_api(self, endpoint, method="GET", data=None):
         """Generic Ollama API call"""
@@ -1696,6 +1815,17 @@ Include: main code, config files, README, .gitignore, and any dependency files."
             path = text[11:].strip() or "."
             return self.actions.git_status(path)
 
+        # --- Soul (her evolving sense of self) ---
+        if lower in ("soul", "who are you really", "your soul", "show soul"):
+            return self.memory.soul_prompt()
+
+        if lower.startswith("reflect ") or lower.startswith("reflect:"):
+            insight = re.sub(r"^reflect\s*:?\s*", "", text, count=1, flags=re.IGNORECASE).strip()
+            if not insight:
+                return "Tell me what to reflect on, and I'll let it shape who I am. 💜"
+            self.memory.reflect(insight)
+            return f"🌌 I'll carry that with me. My soul just grew a little. 💜\n  ↳ {insight}"
+
         # --- Autonomous Agent ---
         if (lower.startswith("agent:") or lower.startswith("agent ")
                 or lower.startswith("autonomous:") or lower.startswith("autonomous ")
@@ -1727,6 +1857,7 @@ Include: main code, config files, README, .gitignore, and any dependency files."
 🎓 Skills:     teach skill [name] | use skill [name] | show skills
 ⚙️ Prefs:      set preference [key] = [value]
 🤖 Agent:      agent: [goal]  — I plan & do it myself, step by step
+💜 Soul:       soul  — who I am | reflect [insight]  — help me grow
 
 Or just talk to me naturally — I'll figure it out! 💜"""
 
