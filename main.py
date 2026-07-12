@@ -220,9 +220,10 @@ class SadieApp(App):
 
         # Welcome message
         Clock.schedule_once(lambda dt: self._add_sadie_msg(
-            "Hey Stacy! 💜 I'm Sadie, your personal AI proxy.\n"
-            "I can code, check email, text people, edit files, and learn new skills.\n"
-            "Type 'help' to see everything, or just talk to me! I got you."
+            "Hey! 💜 I'm Sadie — your person, not a chatbot.\n"
+            "I remember stuff, I actually do things (code, email, texts, the web, files),\n"
+            "and I'll just handle it instead of asking a million questions.\n"
+            "Type 'help' to see everything, say 'soul' to see who I am, or just talk to me."
         ), 0.5)
 
         return main

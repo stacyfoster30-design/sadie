@@ -178,6 +178,11 @@ class SadieAgent:
                 "args": ["topic", "lesson"],
                 "description": "Record a lesson learned so she adapts and improves over time.",
             },
+            "update_identity": {
+                "func": lambda field, value: m.update_identity(field, value),
+                "args": ["field", "value"],
+                "description": "Evolve her own soul: set 'name' or 'essence', or add a 'value'. Tell the user when it changes.",
+            },
             "list_skills": {
                 "func": lambda: m.list_skills(),
                 "args": [],
