@@ -9,6 +9,7 @@ never judges, and always keeps it 100.
 """
 
 import os
+import re
 import json
 import time
 import datetime
@@ -1130,6 +1131,49 @@ class Sadie:
         except Exception as e:
             return f"I can't reach my brain right now (Ollama at {self.ollama_host}). Make sure it's running! Error: {e}"
 
+    def _raw_llm(self, messages, temperature=0.3):
+        """
+        Low-level chat call used by the autonomous agent.
+
+        Unlike _call_ollama, this sends a caller-provided message list verbatim
+        (including its own system prompt) and does NOT touch the rolling chat
+        history. It returns the raw model text, or an error string on failure.
+        """
+        import json as _json
+        import urllib.request
+
+        payload = {
+            "model": self.ollama_model,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": temperature,
+                "num_ctx": 8192,
+            },
+        }
+        try:
+            req = urllib.request.Request(
+                f"{self.ollama_host}/api/chat",
+                data=_json.dumps(payload).encode(),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=300) as resp:
+                data = _json.loads(resp.read())
+                return data.get("message", {}).get("content", "")
+        except Exception as e:
+            return f"ERROR: can't reach the model at {self.ollama_host}: {e}"
+
+    def run_agent(self, goal, max_steps=12, verbose=True):
+        """
+        Run Sadie in autonomous agent mode: she plans, acts, and iterates on her
+        own until the goal is done or she runs out of steps. Returns a summary.
+        """
+        from sadie_agent import SadieAgent
+
+        agent = SadieAgent(self, max_steps=max_steps, verbose=verbose)
+        return agent.run(goal)
+
     def _ollama_api(self, endpoint, method="GET", data=None):
         """Generic Ollama API call"""
         import json as _json
@@ -1652,6 +1696,17 @@ Include: main code, config files, README, .gitignore, and any dependency files."
             path = text[11:].strip() or "."
             return self.actions.git_status(path)
 
+        # --- Autonomous Agent ---
+        if (lower.startswith("agent:") or lower.startswith("agent ")
+                or lower.startswith("autonomous:") or lower.startswith("autonomous ")
+                or lower.startswith("goal:") or lower.startswith("goal ")):
+            # Strip the trigger keyword to get the goal itself.
+            goal = re.sub(r"^(agent|autonomous|goal)\s*:?\s*", "", text, count=1, flags=re.IGNORECASE).strip()
+            if not goal:
+                return ("🤖 Give me a goal and I'll handle it autonomously!\n"
+                        "Try: agent: find all TODO comments in this repo and list them")
+            return self.run_agent(goal)
+
         # --- Identity ---
         if lower in ("who are you", "what are you", "what's your name"):
             return ("💜 I'm Sadie — Smart Adaptive Digital Intelligence Entity.\n"
@@ -1671,6 +1726,7 @@ Include: main code, config files, README, .gitignore, and any dependency files."
 🔧 Git:        git status [path]
 🎓 Skills:     teach skill [name] | use skill [name] | show skills
 ⚙️ Prefs:      set preference [key] = [value]
+🤖 Agent:      agent: [goal]  — I plan & do it myself, step by step
 
 Or just talk to me naturally — I'll figure it out! 💜"""
 
