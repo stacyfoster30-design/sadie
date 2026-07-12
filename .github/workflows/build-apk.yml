@@ -43,11 +43,15 @@ jobs:
           # python-for-android's libffi recipe uses an old configure.ac that calls
           # LT_SYS_SYMBOL_USCORE (a libtool-internal m4_defun macro).  autoconf 2.71+
           # on Ubuntu 24 treats unrecognised m4_defun macros as fatal errors.
-          # Work around by wrapping autoconf so autoreconf sees --warnings=no-error,
-          # which demotes the "possibly undefined macro" check from fatal → warning.
-          printf '#!/bin/bash\nexec /usr/bin/autoconf --warnings=no-error "$@"\n' | \
-            sudo tee /usr/local/bin/autoconf > /dev/null
-          sudo chmod +x /usr/local/bin/autoconf
+          # autoreconf hardcodes the path /usr/bin/autoconf at runtime, so the
+          # AUTOCONF env var and a /usr/local/bin wrapper are both bypassed.
+          # Replace /usr/bin/autoconf in-place with a wrapper that adds
+          # --warnings=no-error, demoting the "possibly undefined macro" check
+          # from a fatal error to a warning.
+          sudo mv /usr/bin/autoconf /usr/bin/autoconf.real
+          printf '#!/bin/bash\nexec /usr/bin/autoconf.real --warnings=no-error "$@"\n' | \
+            sudo tee /usr/bin/autoconf > /dev/null
+          sudo chmod +x /usr/bin/autoconf
 
       - name: Install buildozer
         run: pip install --upgrade buildozer cython
@@ -65,8 +69,6 @@ jobs:
           key: v1-buildozer-local-${{ hashFiles('buildozer.spec') }}
 
       - name: Build debug APK
-        env:
-          AUTOCONF: /usr/local/bin/autoconf
         run: buildozer android debug
 
       - name: Upload APK artifact
