@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HoldOff — Powered by Super Sadie</title>
+<meta name="description" content="HoldOff Business Suite powered by Super Sadie AI">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiSG9sZE9mZiIsInNob3J0X25hbWUiOiJIb2xkT2ZmIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwYTBhMGEiLCJ0aGVtZV9jb2xvciI6IiMyZDZhNGYifQ==">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;--primary:#2d6a4f;--primary-l:#40916c;--secondary:#e07a5f;--accent:#f4a261;--text:#e8e8e8;--text2:#a0a0a0;--text3:#666;--success:#4ade80;--error:#f87171;--warning:#fbbf24;--info:#60a5fa;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.4)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.app{display:flex;height:100vh}
+.sidebar{width:260px;background:var(--bg2);border-right:1px solid var(--bg4);display:flex;flex-direction:column;flex-shrink:0;transition:transform .3s}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--bg4);text-align:center}
+.sidebar-header h1{font-size:1.4rem;color:var(--primary-l)}
+.sidebar-header p{font-size:.7rem;color:var(--text3);margin-top:4px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:var(--text2);transition:all .2s;font-size:.9rem;margin:2px 0}
+.nav-item:hover,.nav-item.active{background:var(--bg3);color:var(--text)}
+.nav-item.active{border-left:3px solid var(--primary-l);color:var(--primary-l)}
+.nav-item .icon{width:20px;text-align:center}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:var(--bg2);border-bottom:1px solid var(--bg4);display:flex;align-items:center;padding:0 20px;gap:12px}
+.topbar .menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer}
+.topbar h2{font-size:1.1rem;flex:1}
+.ai-status{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--success)}
+.ai-status .dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.content{flex:1;overflow-y:auto;padding:24px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.card{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--radius);padding:20px;transition:transform .2s}
+.card:hover{transform:translateY(-2px)}
+.card h3{font-size:.95rem;margin-bottom:8px;color:var(--text)}
+.card .val{font-size:1.8rem;font-weight:700;color:var(--primary-l)}
+.card .sub{font-size:.75rem;color:var(--text3);margin-top:4px}
+.stat-card{text-align:center}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-p{background:var(--primary);color:white}.btn-p:hover{background:var(--primary-l)}
+.btn-s{background:var(--secondary);color:white}.btn-s:hover{opacity:.9}
+.btn-o{background:transparent;border:1px solid var(--bg4);color:var(--text2)}.btn-o:hover{border-color:var(--primary-l);color:var(--primary-l)}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+.btn-d{background:var(--error);color:white}.btn-d:hover{opacity:.8}
+input,textarea,select{background:var(--bg3);border:1px solid var(--bg4);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.9rem;width:100%;font-family:inherit}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--primary-l)}
+textarea{resize:vertical;min-height:80px}
+.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;display:inline-block}
+.badge-g{background:rgba(74,222,128,.15);color:var(--success)}
+.badge-y{background:rgba(251,191,36,.15);color:var(--warning)}
+.badge-r{background:rgba(248,113,113,.15);color:var(--error)}
+.badge-b{background:rgba(96,165,250,.15);color:var(--info)}
+.badge-p{background:rgba(45,106,79,.2);color:var(--primary-l)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--bg4);font-size:.85rem}
+th{color:var(--text3);font-weight:600;font-size:.75rem;text-transform:uppercase}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--radius);padding:24px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h3{margin-bottom:16px;font-size:1.1rem}
+.modal .field{margin-bottom:12px}
+.modal .field label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:4px}
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--bg4);padding-bottom:8px;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem;color:var(--text3);transition:all .2s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--primary);color:white}
+.chat-container{display:flex;flex-direction:column;height:calc(100vh - 56px)}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:80%;padding:12px 16px;border-radius:16px;font-size:.9rem;line-height:1.5;word-wrap:break-word;white-space:pre-wrap}
+.chat-msg.user{align-self:flex-end;background:var(--primary);color:white;border-bottom-right-radius:4px}
+.chat-msg.ai{align-self:flex-start;background:var(--bg3);border-bottom-left-radius:4px}
+.chat-msg.ai .provider{font-size:.65rem;color:var(--text3);margin-top:6px}
+.chat-msg.system{align-self:center;background:var(--bg4);color:var(--text3);font-size:.8rem;border-radius:8px;max-width:90%}
+.chat-input-area{padding:16px 20px;border-top:1px solid var(--bg4);display:flex;gap:10px;background:var(--bg2)}
+.chat-input-area input{flex:1}
+.chat-input-area button{flex-shrink:0}
+.typing{display:flex;gap:4px;padding:8px 16px}
+.typing span{width:8px;height:8px;background:var(--text3);border-radius:50%;animation:bounce .6s infinite alternate}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{transform:translateY(-6px);opacity:.3}}
+.progress-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--primary-l));transition:width .5s}
+.kanban{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;min-height:400px}
+.kanban-col{min-width:260px;flex:1;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--bg4);display:flex;flex-direction:column}
+.kanban-col-header{padding:12px 16px;border-bottom:1px solid var(--bg4);font-weight:600;font-size:.85rem;display:flex;justify-content:space-between;align-items:center}
+.kanban-col-body{flex:1;padding:8px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.kanban-card{background:var(--bg3);border:1px solid var(--bg4);border-radius:8px;padding:10px;cursor:grab;font-size:.85rem}
+.kanban-card:hover{border-color:var(--primary-l)}
+.kanban-card .kc-title{font-weight:600;margin-bottom:4px}
+.kanban-card .kc-meta{display:flex;justify-content:space-between;font-size:.7rem;color:var(--text3)}
+.ai-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.ai-card{background:var(--bg3);border:1px solid var(--bg4);border-radius:8px;padding:12px;font-size:.8rem}
+.ai-card .ai-name{font-weight:700;margin-bottom:4px}
+.ai-card .ai-provider{color:var(--text3);font-size:.7rem}
+.ai-card .ai-status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
+.ai-card .ai-status-dot.on{background:var(--success)}
+.ai-card .ai-status-dot.off{background:var(--error)}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:16px 0}
+.setup-item{background:var(--bg3);border:1px solid var(--bg4);border-radius:8px;padding:14px}
+.setup-item .si-name{font-weight:700;color:var(--text);margin-bottom:6px;font-size:.9rem}
+.setup-item .si-link{display:inline-block;font-size:.75rem;padding:4px 10px;background:var(--primary);color:white;border-radius:4px;margin-bottom:8px;text-decoration:none;cursor:pointer}
+.setup-item input{margin-bottom:8px}
+.setup-item .si-status{font-size:.7rem;color:var(--text3)}
+.ai-card .ai-status-dot.no-key{background:var(--warning)}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.section-header h3{font-size:1.1rem}
+.empty{text-align:center;padding:40px;color:var(--text3)}
+.chart-bar{display:flex;align-items:end;gap:8px;height:200px;padding:20px 0}
+.chart-bar .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar .bar{width:100%;background:linear-gradient(to top,var(--primary),var(--primary-l));border-radius:4px 4px 0 0;min-height:4px;transition:height .5s}
+.chart-bar .bar-label{font-size:.65rem;color:var(--text3)}
+.chart-bar .bar-val{font-size:.7rem;color:var(--text2)}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}
+.mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}
+.gap-1{gap:8px}.gap-2{gap:16px}
+.flex-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.text-s{font-size:.75rem}.text-m{font-size:.85rem}
+.text-muted{color:var(--text3)}
+.w-full{width:100%}
+.inline-edit{background:transparent;border:1px solid transparent;color:var(--text);padding:4px 8px;border-radius:4px;font-size:inherit;font-weight:inherit}
+.inline-edit:hover{border-color:var(--bg4)}
+.inline-edit:focus{border-color:var(--primary-l);outline:none;background:var(--bg3)}
+@media(max-width:768px){
+.sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.topbar .menu-btn{display:block}
+.kanban{flex-direction:column}
+.kanban-col{min-width:100%}
+.chat-msg{max-width:95%}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<h1>🛡️ HoldOff</h1>
+<p>Powered by Super Sadie ⚡</p>
+<p style="font-size:.6rem;color:var(--text3);margin-top:2px">20 AI Engines • Zero Cost</p>
+</div>
+<nav class="sidebar-nav" id="sidebarNav"></nav>
+<div style="padding:12px;border-top:1px solid var(--bg4)">
+<div class="ai-status"><span class="dot"></span><span id="aiStatusText">Super Sadie Active</span></div>
+<div style="font-size:.65rem;color:var(--text3);margin-top:4px"><span id="aiCount">0</span>/20 AIs Online</div>
+</div>
+</aside>
+<div class="main">
+<div class="topbar">
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<h2 id="pageTitle">Dashboard</h2>
+<div class="ai-status"><span class="dot"></span> Super Sadie</div>
+</div>
+<div class="content" id="content"></div>
+</div>
+</div>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// ==================== DATA LAYER ====================
+const DB_KEY = 'holdoff_supersakie_v2';
+const DEFAULT_DATA = {
+  tasks: [
+    {id:1,title:'Finalize VERDICT scoring algorithm',status:'doing',priority:'high',cat:'Tech'},
+    {id:2,title:'Submit SBIR Phase I grant application',status:'todo',priority:'high',cat:'Fundraising'},
+    {id:3,title:'Design SPIRAL LOCK UI wireframes',status:'todo',priority:'medium',cat:'Product'},
+    {id:4,title:'Launch social media campaign',status:'todo',priority:'medium',cat:'Marketing'},
+    {id:5,title:'Set up Stripe payment integration',status:'doing',priority:'high',cat:'Tech'},
+    {id:6,title:'Write investor pitch deck v2',status:'done',priority:'high',cat:'Fundraising'},
+    {id:7,title:'Record app demo video',status:'todo',priority:'low',cat:'Marketing'},
+    {id:8,title:'Implement crisis hotline integration',status:'doing',priority:'high',cat:'Tech'},
+  ],
+  finances: {
+    revenue: [
+      {id:1,desc:'Pre-launch subscriptions',amount:2400,date:'2026-06',type:'revenue',cat:'Subscriptions'},
+      {id:2,desc:'Workshop facilitation',amount:1500,date:'2026-05',type:'revenue',cat:'Services'},
+      {id:3,desc:'Grant - Mental Health Innovation',amount:25000,date:'2026-04',type:'revenue',cat:'Grants'},
+    ],
+    expenses: [
+      {id:1,desc:'AWS hosting',amount:450,date:'2026-06',type:'expense',cat:'Infrastructure'},
+      {id:2,desc:'Figma + design tools',amount:75,date:'2026-06',type:'expense',cat:'Software'},
+      {id:3,desc:'Legal - trademark filing',amount:2200,date:'2026-05',type:'expense',cat:'Legal'},
+      {id:4,desc:'Marketing - social ads',amount:800,date:'2026-05',type:'expense',cat:'Marketing'},
+    ],
+  },
+  contacts: [
+    {id:1,name:'Dr. Sarah Chen',role:'Clinical Advisor',email:'schen@example.com',type:'advisor'},
+    {id:2,name:'Marcus Thompson',role:'Angel Investor',email:'mt@example.com',type:'investor',notes:'Interested in seed round'},
+    {id:3,name:'TechStars',role:'Accelerator',email:'apply@techstars.com',type:'partner'},
+  ],
+  notes: [
+    {id:1,title:'App Launch Checklist',cat:'Operations',content:'1. Final QA testing\n2. App Store submission\n3. Press release\n4. Email blast to waitlist\n5. Social media blitz\n6. Monitor crash reports\n7. Customer support ready',date:'2026-06-28'},
+    {id:2,title:'Investor Meeting Notes',cat:'Fundraising',content:'Key points:\n- Focus on TAM ($4.2B mental health app market)\n- Emphasize VERDICT differentiator\n- Show user retention metrics\n- Ask: $500K seed at $5M pre-money',date:'2026-06-25'},
+  ],
+  campaigns: [
+    {id:1,name:'Launch Week Blitz',status:'active',platform:'Multi',budget:2000,spent:800,leads:145},
+    {id:2,name:'Mental Health Awareness Month',status:'planned',platform:'Instagram',budget:1500,spent:0,leads:0},
+    {id:3,name:'Therapist Outreach',status:'active',platform:'Email',budget:500,spent:200,leads:38},
+  ],
+  fundraising: [
+    {id:1,source:'SBIR Phase I',type:'Grant',amount:275000,status:'Applied',probability:40},
+    {id:2,source:'Mental Health Innovation Fund',type:'Grant',amount:50000,status:'Received',probability:100},
+    {id:3,source:'Angel Round',type:'Investment',amount:500000,status:'Pitching',probability:25},
+    {id:4,source:'NAMI Partnership Grant',type:'Grant',amount:35000,status:'Researching',probability:20},
+  ],
+  metrics: {
+    waitlist:2847, mau:0, sessions:0, nps:0, churnRate:0,
+    mrr:2400, arr:28800, burnRate:3525, runway:8.2
+  },
+  aiKeys: {hf:'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'},
+  chatHistory: [],
+  settings: {theme:'dark'}
+};
+
+function loadData(){try{return JSON.parse(localStorage.getItem(DB_KEY))||JSON.parse(JSON.stringify(DEFAULT_DATA))}catch(e){return JSON.parse(JSON.stringify(DEFAULT_DATA))}}
+function saveData(){localStorage.setItem(DB_KEY, JSON.stringify(data))}
+let data = loadData();
+function genId(arr){return arr.length?Math.max(...arr.map(i=>i.id))+1:1}
+
+// ==================== AI PROVIDERS ====================
+const AI_PROVIDERS = [
+  {id:'gemini',name:'Google Gemini',url:'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',keyName:'GEMINI',buildReq:(k,p)=>({url:`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k}`,body:{contents:[{parts:[{text:p}]}]}}),parseRes:r=>r.candidates?.[0]?.content?.parts?.[0]?.text},
+  {id:'groq',name:'Groq',url:'https://api.groq.com/openai/v1/chat/completions',keyName:'GROQ',buildReq:(k,p)=>({url:'https://api.groq.com/openai/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'llama-3.3-70b-versatile',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'cohere',name:'Cohere',url:'https://api.cohere.com/v2/chat',keyName:'COHERE',buildReq:(k,p)=>({url:'https://api.cohere.com/v2/chat',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'command-r-plus',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}]}}),parseRes:r=>r.message?.content?.[0]?.text},
+  {id:'hf',name:'HuggingFace',url:'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions',keyName:'HUGGINGFACE',buildReq:(k,p)=>({url:'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'mistralai/Mistral-7B-Instruct-v0.3',messages:[{role:'user',content:SYSTEM_PROMPT+'\n\n'+p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'mistral',name:'Mistral AI',url:'https://api.mistral.ai/v1/chat/completions',keyName:'MISTRAL',buildReq:(k,p)=>({url:'https://api.mistral.ai/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'mistral-small-latest',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'together',name:'Together AI',url:'https://api.together.xyz/v1/chat/completions',keyName:'TOGETHER',buildReq:(k,p)=>({url:'https://api.together.xyz/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'meta-llama/Llama-3.3-70B-Instruct-Turbo',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'openrouter',name:'OpenRouter',url:'https://openrouter.ai/api/v1/chat/completions',keyName:'OPENROUTER',buildReq:(k,p)=>({url:'https://openrouter.ai/api/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'meta-llama/llama-3.3-70b-instruct:free',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}]}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'nvidia',name:'NVIDIA NIM',url:'https://integrate.api.nvidia.com/v1/chat/completions',keyName:'NVIDIA',buildReq:(k,p)=>({url:'https://integrate.api.nvidia.com/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'meta/llama-3.1-8b-instruct',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'sambanova',name:'SambaNova',url:'https://api.sambanova.ai/v1/chat/completions',keyName:'SAMBANOVA',buildReq:(k,p)=>({url:'https://api.sambanova.ai/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'Meta-Llama-3.1-8B-Instruct',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'fireworks',name:'Fireworks AI',url:'https://api.fireworks.ai/inference/v1/chat/completions',keyName:'FIREWORKS',buildReq:(k,p)=>({url:'https://api.fireworks.ai/inference/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'accounts/fireworks/models/llama-v3p1-8b-instruct',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'cerebras',name:'Cerebras',url:'https://api.cerebras.ai/v1/chat/completions',keyName:'CEREBRAS',buildReq:(k,p)=>({url:'https://api.cerebras.ai/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'llama-3.3-70b',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'lepton',name:'Lepton AI',url:'https://llama3-1-8b.lepton.run/api/v1/chat/completions',keyName:'LEPTON',buildReq:(k,p)=>({url:'https://llama3-1-8b.lepton.run/api/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'llama3-1-8b',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'deepinfra',name:'DeepInfra',url:'https://api.deepinfra.com/v1/openai/chat/completions',keyName:'DEEPINFRA',buildReq:(k,p)=>({url:'https://api.deepinfra.com/v1/openai/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'meta-llama/Llama-3.3-70B-Instruct',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'perplexity',name:'Perplexity',url:'https://api.perplexity.ai/chat/completions',keyName:'PERPLEXITY',buildReq:(k,p)=>({url:'https://api.perplexity.ai/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'llama-3.1-sonar-small-128k-online',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'anthropic',name:'Anthropic Claude',url:'https://api.anthropic.com/v1/messages',keyName:'ANTHROPIC',buildReq:(k,p)=>({url:'https://api.anthropic.com/v1/messages',headers:{'x-api-key':k,'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:{model:'claude-sonnet-4-20250514',max_tokens:2048,system:SYSTEM_PROMPT,messages:[{role:'user',content:p}]}}),parseRes:r=>r.content?.[0]?.text},
+  {id:'openai',name:'OpenAI',url:'https://api.openai.com/v1/chat/completions',keyName:'OPENAI',buildReq:(k,p)=>({url:'https://api.openai.com/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'gpt-4o-mini',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'deepseek',name:'DeepSeek',url:'https://api.deepseek.com/v1/chat/completions',keyName:'DEEPSEEK',buildReq:(k,p)=>({url:'https://api.deepseek.com/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'deepseek-chat',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'xai',name:'xAI Grok',url:'https://api.x.ai/v1/chat/completions',keyName:'XAI',buildReq:(k,p)=>({url:'https://api.x.ai/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'grok-3-mini',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'alibabacloud',name:'Alibaba Qwen',url:'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',keyName:'ALIBABA',buildReq:(k,p)=>({url:'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'qwen-turbo',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+  {id:'github',name:'GitHub Models',url:'https://models.inference.ai.azure.com/chat/completions',keyName:'GITHUB',buildReq:(k,p)=>({url:'https://models.inference.ai.azure.com/chat/completions',headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},body:{model:'meta-llama-3.1-8b-instruct',messages:[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:p}],max_tokens:2048}}),parseRes:r=>r.choices?.[0]?.message?.content},
+];
+
+const SYSTEM_PROMPT = `You are Super Sadie 🛡️, the AI business manager for HoldOff — a mental health and addiction recovery app founded by Stacy Ann Martin. You are empathetic, brilliant, and fiercely dedicated to HoldOff's success.
+
+KEY HOLDOFF INFO:
+- HoldOff: Mental health & addiction recovery app
+- Founder: Stacy Ann Martin (CEO)
+- Mission: Bridge gap between crisis moments and professional help using AI
+- Core Features: VERDICT (AI emotional scoring), INTERPRETER (NLP mood analysis), SPIRAL LOCK (crisis intervention system)
+- Products: Free tier, HoldOff+ ($9.99/mo), HoldOff Pro ($19.99/mo)
+- Promo: LAUNCH50 (50% off first 3 months)
+- Tech Stack: React Native, Node.js, PostgreSQL, TensorFlow, AWS
+- Target: 18-45 adults, therapy-seekers, recovery community
+- Market: $4.2B mental health app market
+- Key Differentiators: AI-powered crisis detection, peer support, personalized recovery paths
+
+You help Stacy with everything: strategy, marketing, finances, product, fundraising, operations. Be concise, actionable, and always aligned with HoldOff's mission. Use data from the app when relevant. Format responses with markdown-like structure using line breaks and bullet points.`;
+
+let currentProvider = null;
+let failedProviders = new Set();
+
+function getActiveProviders(){
+  return AI_PROVIDERS.filter(p => data.aiKeys[p.id]);
+}
+
+async function callAI(prompt){
+  const active = getActiveProviders().filter(p => !failedProviders.has(p.id));
+  if(!active.length){
+    failedProviders.clear();
+    return "⚠️ No AI providers configured yet! Go to ⚡ Super Sadie AI tab to add your free API keys. Each one takes about 30 seconds to set up — and they're all FREE tier!";
+  }
+  // Rotate through providers
+  const shuffled = [...active].sort(() => Math.random() - 0.5);
+  for(const provider of shuffled){
+    try{
+      const key = data.aiKeys[provider.id];
+      const req = provider.buildReq(key, prompt);
+      const resp = await fetch(req.url, {
+        method:'POST',
+        headers:req.headers||{'Content-Type':'application/json'},
+        body:JSON.stringify(req.body)
+      });
+      if(!resp.ok) throw new Error(`${resp.status}`);
+      const json = await resp.json();
+      const text = provider.parseRes(json);
+      if(!text) throw new Error('Empty response');
+      currentProvider = provider.name;
+      failedProviders.delete(provider.id);
+      return text;
+    }catch(e){
+      console.warn(`${provider.name} failed:`, e.message);
+      failedProviders.add(provider.id);
+      continue;
+    }
+  }
+  failedProviders.clear();
+  return "All AI providers are temporarily busy. Please try again in a moment! 💛";
+}
+
+// ==================== NAVIGATION ====================
+const PAGES = [
+  {id:'dashboard',icon:'📊',label:'Dashboard'},
+  {id:'sadie',icon:'🤖',label:'Super Sadie AI'},
+  {id:'tasks',icon:'✅',label:'Tasks'},
+  {id:'finances',icon:'💰',label:'Finances'},
+  {id:'products',icon:'🧴',label:'Products'},
+  {id:'marketing',icon:'📣',label:'Marketing'},
+  {id:'contacts',icon:'👥',label:'Contacts & CRM'},
+  {id:'fundraising',icon:'🎯',label:'Fundraising'},
+  {id:'tech',icon:'⚙️',label:'Tech & Dev'},
+  {id:'notes',icon:'📝',label:'Notes'},
+  {id:'analytics',icon:'📈',label:'Analytics'},
+  {id:'settings',icon:'🔧',label:'Settings'},
+];
+
+let currentPage = 'dashboard';
+
+function renderNav(){
+  const nav = document.getElementById('sidebarNav');
+  nav.innerHTML = PAGES.map(p=>`<div class="nav-item ${currentPage===p.id?'active':''}" onclick="goTo('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</div>`).join('');
+}
+
+function goTo(page){
+  currentPage = page;
+  renderNav();
+  renderPage();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
+function openModal(html){document.getElementById('modalContent').innerHTML=html;document.getElementById('modalOverlay').classList.add('show')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+function updateAICount(){
+  const count = getActiveProviders().length;
+  const el = document.getElementById('aiCount');
+  if(el) el.textContent = count;
+  const st = document.getElementById('aiStatusText');
+  if(st) st.textContent = count > 0 ? 'Super Sadie Active' : 'Setup Required';
+}
+
+function showAISetup(){
+  const setupLinks = {
+    'gemini':'https://ai.google.dev',
+    'groq':'https://console.groq.com',
+    'cohere':'https://dashboard.cohere.com',
+    'hf':'https://huggingface.co/settings/tokens',
+    'mistral':'https://console.mistral.ai',
+    'together':'https://api.together.ai',
+    'openrouter':'https://openrouter.ai/keys',
+    'nvidia':'https://build.nvidia.com/explore/discover',
+    'sambanova':'https://cloud.sambanova.com',
+    'fireworks':'https://www.fireworks.ai/login',
+    'cerebras':'https://www.cerebras.ai',
+    'lepton':'https://dashboard.lepton.ai',
+    'deepinfra':'https://deepinfra.com/dash/api_keys',
+    'perplexity':'https://www.perplexity.ai/settings/api',
+    'anthropic':'https://console.anthropic.com',
+    'openai':'https://platform.openai.com/api-keys',
+    'deepseek':'https://platform.deepseek.com/api_keys',
+    'xai':'https://console.x.ai',
+    'alibabacloud':'https://dashscope.console.aliyun.com',
+    'github':'https://github.com/settings/tokens'
+  };
+  
+  let html = `<h3>⚡ Activate Super Sadie</h3>
+  <p style="color:var(--text2);font-size:.85rem;margin-bottom:12px">Add free AI API keys. Most take 30 seconds to set up. All are completely FREE!</p>
+  <div class="setup-grid">`;
+  
+  for(const provider of AI_PROVIDERS){
+    const hasKey = !!data.aiKeys[provider.id];
+    const link = setupLinks[provider.id];
+    html += `<div class="setup-item">
+      <div class="si-name">${provider.name}</div>
+      <a href="${link}" target="_blank" class="si-link">Get Free Key →</a>
+      <input type="password" id="key_${provider.id}" placeholder="Paste API key..." value="${escHtml(data.aiKeys[provider.id]||'')}" style="font-size:.8rem">
+      <div class="si-status">${hasKey?'✅ Active':'⚪ Inactive'}</div>
+    </div>`;
+  }
+  
+  html += `</div>
+  <div style="display:flex;gap:8px;margin-top:16px">
+    <button class="btn btn-p" onclick="saveAIKeys()">💾 Save Keys</button>
+    <button class="btn btn-o" onclick="testAIProviders()">🧪 Test All</button>
+    <button class="btn btn-o" onclick="closeModal()">Done</button>
+  </div>`;
+  
+  openModal(html);
+}
+
+function saveAIKeys(){
+  for(const provider of AI_PROVIDERS){
+    const val = document.getElementById(`key_${provider.id}`).value.trim();
+    if(val) data.aiKeys[provider.id] = val;
+    else delete data.aiKeys[provider.id];
+  }
+  saveData();
+  updateAICount();
+  alert('✅ Keys saved! Go back to chat and start asking Super Sadie anything!');
+  closeModal();
+  if(currentPage==='sadie') renderSadie(document.getElementById('content'));
+}
+
+async function testAIProviders(){
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '🔄 Testing...';
+  
+  const results = [];
+  for(const provider of getActiveProviders()){
+    try{
+      const key = data.aiKeys[provider.id];
+      const req = provider.buildReq(key, 'Say "HoldOff is awesome" in 1 sentence.');
+      const resp = await fetch(req.url, {
+        method:'POST',
+        headers:req.headers||{'Content-Type':'application/json'},
+        body:JSON.stringify(req.body)
+      });
+      if(resp.ok){
+        results.push(`✅ ${provider.name}`);
+      }else{
+        results.push(`❌ ${provider.name} - Status ${resp.status}`);
+      }
+    }catch(e){
+      results.push(`❌ ${provider.name} - ${e.message}`);
+    }
+  }
+  
+  btn.disabled = false;
+  btn.textContent = '🧪 Test All';
+  alert('Test Results:\n\n' + results.join('\n') + '\n\nFixed any issues? Save keys and try again!');
+}
+
+// ==================== PAGE RENDERERS ====================
+function renderPage(){
+  const c = document.getElementById('content');
+  const t = document.getElementById('pageTitle');
+  const page = PAGES.find(p=>p.id===currentPage);
+  t.textContent = page ? page.label : 'HoldOff';
+  
+  const renderers = {dashboard:renderDashboard,sadie:renderSadie,tasks:renderTasks,finances:renderFinances,products:renderProducts,marketing:renderMarketing,contacts:renderContacts,fundraising:renderFundraising,tech:renderTech,notes:renderNotes,analytics:renderAnalytics,settings:renderSettings};
+  if(renderers[currentPage]) renderers[currentPage](c);
+  updateAICount();
+}
+
+// ---------- DASHBOARD ----------
+function renderDashboard(c){
+  const totalRev = data.finances.revenue.reduce((s,r)=>s+r.amount,0);
+  const totalExp = data.finances.expenses.reduce((s,r)=>s+r.amount,0);
+  const tasksDone = data.tasks.filter(t=>t.status==='done').length;
+  const tasksTotal = data.tasks.length;
+  const activeCampaigns = data.campaigns.filter(c=>c.status==='active').length;
+  const fundingReceived = data.fundraising.filter(f=>f.status==='Received').reduce((s,f)=>s+f.amount,0);
+  const fundingPipeline = data.fundraising.reduce((s,f)=>s+f.amount,0);
+  
+  c.innerHTML = `
+  <div class="grid g4">
+    <div class="card stat-card"><div class="sub">Waitlist</div><div class="val">${data.metrics.waitlist.toLocaleString()}</div><div class="sub">Pre-launch signups</div></div>
+    <div class="card stat-card"><div class="sub">Revenue</div><div class="val">$${totalRev.toLocaleString()}</div><div class="sub">Total earned</div></div>
+    <div class="card stat-card"><div class="sub">Burn Rate</div><div class="val">$${data.metrics.burnRate.toLocaleString()}/mo</div><div class="sub">${data.metrics.runway} mo runway</div></div>
+    <div class="card stat-card"><div class="sub">Tasks</div><div class="val">${tasksDone}/${tasksTotal}</div><div class="sub">Completed</div></div>
+  </div>
+  <div class="grid g2 mt-2">
+    <div class="card">
+      <h3>💰 Financial Overview</h3>
+      <div class="mt-1">
+        <div class="flex-between mb-1"><span class="text-m">Total Revenue</span><span style="color:var(--success)">$${totalRev.toLocaleString()}</span></div>
+        <div class="flex-between mb-1"><span class="text-m">Total Expenses</span><span style="color:var(--error)">$${totalExp.toLocaleString()}</span></div>
+        <div class="flex-between mb-1" style="border-top:1px solid var(--bg4);padding-top:8px"><span class="text-m" style="font-weight:700">Net</span><span style="color:${totalRev-totalExp>=0?'var(--success)':'var(--error)'};font-weight:700">$${(totalRev-totalExp).toLocaleString()}</span></div>
+        <div class="flex-between mt-1"><span class="text-m">Funding Pipeline</span><span style="color:var(--info)">$${fundingPipeline.toLocaleString()}</span></div>
+        <div class="flex-between"><span class="text-m">Funding Received</span><span style="color:var(--success)">$${fundingReceived.toLocaleString()}</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🚀 Quick Actions</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <button class="btn btn-p w-full" onclick="goTo('sadie')">🤖 Talk to Super Sadie</button>
+        <button class="btn btn-s w-full" onclick="goTo('tasks')">✅ Manage Tasks</button>
+        <button class="btn btn-o w-full" onclick="goTo('finances')">💰 Add Transaction</button>
+        <button class="btn btn-o w-full" onclick="goTo('marketing')">📣 Marketing Hub</button>
+      </div>
+    </div>
+  </div>
+  <div class="grid g2 mt-2">
+    <div class="card">
+      <h3>📋 Priority Tasks</h3>
+      <div class="mt-1">${data.tasks.filter(t=>t.status!=='done').slice(0,5).map(t=>`
+        <div class="flex-between mb-1" style="padding:6px 0;border-bottom:1px solid var(--bg4)">
+          <span class="text-m">${t.title}</span>
+          <span class="badge ${t.priority==='high'?'badge-r':t.priority==='medium'?'badge-y':'badge-b'}">${t.priority}</span>
+        </div>`).join('')}
+        ${data.tasks.filter(t=>t.status!=='done').length===0?'<div class="empty">All caught up! 🎉</div>':''}
+      </div>
+    </div>
+    <div class="card">
+      <h3>📣 Active Campaigns</h3>
+      <div class="mt-1">${data.campaigns.filter(c=>c.status==='active').map(c=>`
+        <div style="padding:8px 0;border-bottom:1px solid var(--bg4)">
+          <div class="flex-between"><span class="text-m">${c.name}</span><span class="badge badge-g">Active</span></div>
+          <div class="text-s text-muted mt-1">${c.platform} • ${c.leads} leads • $${c.spent}/$${c.budget}</div>
+          <div class="progress-bar mt-1"><div class="progress-fill" style="width:${(c.spent/c.budget*100)}%"></div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="card mt-2">
+    <h3>🛡️ HoldOff Launch Readiness</h3>
+    <div class="grid g3 mt-1">
+      ${[
+        {name:'VERDICT Algorithm',pct:75},{name:'INTERPRETER NLP',pct:60},{name:'SPIRAL LOCK',pct:45},
+        {name:'Payment Integration',pct:80},{name:'App Store Prep',pct:30},{name:'Marketing Launch',pct:55}
+      ].map(m=>`
+        <div>
+          <div class="flex-between text-s mb-1"><span>${m.name}</span><span>${m.pct}%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${m.pct}%"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ---------- SUPER SADIE AI ----------
+function renderSadie(c){
+  const active = getActiveProviders();
+  c.innerHTML = `
+  <div class="chat-container" style="height:calc(100vh - 110px)">
+    <div style="display:flex;gap:8px;padding:0 0 8px;flex-wrap:wrap;align-items:center">
+      <span class="badge badge-p">🤖 Super Sadie</span>
+      <span class="badge badge-g">${active.length} AI${active.length!==1?'s':''} Online</span>
+      <button class="btn btn-o btn-sm" onclick="showAISetup()" style="margin-left:auto">⚡ Manage AI Keys (${active.length}/20)</button>
+      <button class="btn btn-o btn-sm" onclick="clearChat()">🗑️ Clear Chat</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg system">🛡️ Super Sadie — powered by ${active.length} free AI engines. ${active.length===0?'Set up your free API keys to get started! Click ⚡ Manage AI Keys above.':'Ask me anything about HoldOff!'}</div>
+      ${(data.chatHistory||[]).map(m=>`<div class="chat-msg ${m.role}">${escHtml(m.text)}${m.provider?`<div class="provider">via ${m.provider}</div>`:''}</div>`).join('')}
+    </div>
+    <div class="chat-input-area">
+      <input id="chatInput" placeholder="Ask Super Sadie anything about HoldOff..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-p" onclick="sendChat()">Send</button>
+    </div>
+  </div>`;
+  const msgs = document.getElementById('chatMessages');
+  if(msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div class="chat-msg user">${escHtml(text)}</div>`;
+  msgs.innerHTML += `<div class="chat-msg ai" id="typingIndicator"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  
+  data.chatHistory = data.chatHistory||[];
+  data.chatHistory.push({role:'user',text});
+  
+  // Build context-aware prompt
+  const context = `Current HoldOff data snapshot:
+- Tasks: ${data.tasks.length} total, ${data.tasks.filter(t=>t.status==='done').length} done
+- Revenue: $${data.finances.revenue.reduce((s,r)=>s+r.amount,0).toLocaleString()}
+- Expenses: $${data.finances.expenses.reduce((s,r)=>s+r.amount,0).toLocaleString()}
+- Waitlist: ${data.metrics.waitlist}
+- Active campaigns: ${data.campaigns.filter(c=>c.status==='active').length}
+- Funding pipeline: $${data.fundraising.reduce((s,f)=>s+f.amount,0).toLocaleString()}
+- Open tasks: ${data.tasks.filter(t=>t.status!=='done').map(t=>t.title).join(', ')}
+
+User question: ${text}`;
+  
+  const response = await callAI(context);
+  
+  const typing = document.getElementById('typingIndicator');
+  if(typing) typing.remove();
+  
+  msgs.innerHTML += `<div class="chat-msg ai">${escHtml(response)}${currentProvider?`<div class="provider">via ${currentProvider}</div>`:''}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  
+  data.chatHistory.push({role:'ai',text:response,provider:currentProvider});
+  if(data.chatHistory.length > 100) data.chatHistory = data.chatHistory.slice(-100);
+  saveData();
+}
+
+function clearChat(){data.chatHistory=[];saveData();renderSadie(document.getElementById('content'))}
+
+function showAISetup(){
+  const html = `
+  <h3>⚡ Super Sadie AI Setup</h3>
+  <p class="text-s text-muted mb-2">Add free API keys to power Super Sadie. All providers offer free tiers — click each link to sign up in ~30 seconds. More keys = more power!</p>
+  <div style="max-height:60vh;overflow-y:auto">
+  ${AI_PROVIDERS.map(p=>{
+    const hasKey = !!data.aiKeys[p.id];
+    return `<div class="ai-card mb-1">
+      <div class="flex-between">
+        <div><span class="ai-status-dot ${hasKey?'on':'no-key'}"></span><strong>${p.name}</strong></div>
+        ${hasKey?`<button class="btn btn-d btn-sm" onclick="removeAIKey('${p.id}')">Remove</button>`:''}
+      </div>
+      <div style="margin-top:6px">
+        ${hasKey?'<span class="badge badge-g">✓ Connected</span>':`<input id="key_${p.id}" type="password" placeholder="Paste ${p.name} API key..." style="font-size:.8rem;padding:6px 10px">
+        <button class="btn btn-p btn-sm mt-1" onclick="saveAIKey('${p.id}')">Save Key</button>`}
+      </div>
+    </div>`;
+  }).join('')}
+  </div>
+  <div class="mt-2" style="text-align:right"><button class="btn btn-o" onclick="closeModal()">Done</button></div>`;
+  openModal(html);
+}
+
+function saveAIKey(id){
+  const input = document.getElementById('key_'+id);
+  if(!input||!input.value.trim()) return;
+  data.aiKeys[id] = input.value.trim();
+  saveData();
+  showAISetup();
+  updateAICount();
+}
+
+function removeAIKey(id){
+  delete data.aiKeys[id];
+  saveData();
+  showAISetup();
+  updateAICount();
+}
+
+// ---------- TASKS ----------
+function renderTasks(c){
+  const cols = [{id:'todo',label:'To Do',color:'var(--info)'},{id:'doing',label:'In Progress',color:'var(--warning)'},{id:'done',label:'Done',color:'var(--success)'}];
+  c.innerHTML = `
+  <div class="section-header">
+    <h3>Task Board</h3>
+    <button class="btn btn-p" onclick="showTaskModal()">+ Add Task</button>
+  </div>
+  <div class="kanban">
+    ${cols.map(col=>`
+    <div class="kanban-col">
+      <div class="kanban-col-header" style="border-left:3px solid ${col.color}">
+        ${col.label} <span class="badge badge-p">${data.tasks.filter(t=>t.status===col.id).length}</span>
+      </div>
+      <div class="kanban-col-body" ondragover="event.preventDefault()" ondrop="dropTask(event,'${col.id}')">
+        ${data.tasks.filter(t=>t.status===col.id).map(t=>`
+        <div class="kanban-card" draggable="true" ondragstart="event.dataTransfer.setData('text','${t.id}')">
+          <div class="kc-title">${escHtml(t.title)}</div>
+          <div class="kc-meta">
+            <span class="badge ${t.priority==='high'?'badge-r':t.priority==='medium'?'badge-y':'badge-b'}">${t.priority}</span>
+            <span>${t.cat||''}</span>
+          </div>
+          <div style="margin-top:6px;display:flex;gap:4px">
+            <button class="btn btn-o btn-sm" onclick="editTask(${t.id})">✏️</button>
+            <button class="btn btn-d btn-sm" onclick="deleteTask(${t.id})">🗑️</button>
+            ${col.id!=='done'?`<button class="btn btn-p btn-sm" onclick="moveTask(${t.id},'${col.id==='todo'?'doing':'done'}')">${col.id==='todo'?'▶ Start':'✓ Done'}</button>`:''}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function showTaskModal(task){
+  const t = task||{title:'',priority:'medium',cat:'General',status:'todo'};
+  openModal(`
+  <h3>${task?'Edit':'New'} Task</h3>
+  <div class="field"><label>Title</label><input id="tf_title" value="${escHtml(t.title)}"></div>
+  <div class="field"><label>Priority</label><select id="tf_pri"><option ${t.priority==='high'?'selected':''}>high</option><option ${t.priority==='medium'?'selected':''}>medium</option><option ${t.priority==='low'?'selected':''}>low</option></select></div>
+  <div class="field"><label>Category</label><input id="tf_cat" value="${t.cat||'General'}"></div>
+  <div class="field"><label>Status</label><select id="tf_status"><option value="todo" ${t.status==='todo'?'selected':''}>To Do</option><option value="doing" ${t.status==='doing'?'selected':''}>In Progress</option><option value="done" ${t.status==='done'?'selected':''}>Done</option></select></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+    <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-p" onclick="saveTask(${task?task.id:0})">Save</button>
+  </div>`);
+}
+
+function saveTask(id){
+  const title=document.getElementById('tf_title').value.trim();
+  if(!title)return;
+  if(id){
+    const t=data.tasks.find(t=>t.id===id);
+    if(t){t.title=title;t.priority=document.getElementById('tf_pri').value;t.cat=document.getElementById('tf_cat').value;t.status=document.getElementById('tf_status').value}
+  }else{
+    data.tasks.push({id:genId(data.tasks),title,priority:document.getElementById('tf_pri').value,cat:document.getElementById('tf_cat').value,status:document.getElementById('tf_status').value});
+  }
+  saveData();closeModal();renderTasks(document.getElementById('content'));
+}
+
+function editTask(id){showTaskModal(data.tasks.find(t=>t.id===id))}
+function deleteTask(id){if(confirm('Delete this task?')){data.tasks=data.tasks.filter(t=>t.id!==id);saveData();renderTasks(document.getElementById('content'))}}
+function moveTask(id,status){const t=data.tasks.find(t=>t.id===id);if(t){t.status=status;saveData();renderTasks(document.getElementById('content'))}}
+function dropTask(e,status){e.preventDefault();const id=parseInt(e.dataTransfer.getData('text'));moveTask(id,status)}
+
+// ---------- FINANCES ----------
+function renderFinances(c){
+  const rev=data.finances.revenue;const exp=data.finances.expenses;
+  const totalRev=rev.reduce((s,r)=>s+r.amount,0);
+  const totalExp=exp.reduce((s,r)=>s+r.amount,0);
+  c.innerHTML=`
+  <div class="section-header"><h3>Financial Overview</h3>
+    <div class="flex-wrap"><button class="btn btn-p" onclick="showFinanceModal('revenue')">+ Revenue</button><button class="btn btn-s" onclick="showFinanceModal('expense')">+ Expense</button></div>
+  </div>
+  <div class="grid g3">
+    <div class="card stat-card"><div class="sub">Total Revenue</div><div class="val" style="color:var(--success)">$${totalRev.toLocaleString()}</div></div>
+    <div class="card stat-card"><div class="sub">Total Expenses</div><div class="val" style="color:var(--error)">$${totalExp.toLocaleString()}</div></div>
+    <div class="card stat-card"><div class="sub">Net Profit</div><div class="val" style="color:${totalRev-totalExp>=0?'var(--success)':'var(--error)'}">$${(totalRev-totalExp).toLocaleString()}</div></div>
+  </div>
+  <div class="grid g2 mt-2">
+    <div class="card"><h3 style="color:var(--success)">💵 Revenue</h3><table><thead><tr><th>Description</th><th>Category</th><th>Date</th><th>Amount</th><th></th></tr></thead><tbody>
+      ${rev.map(r=>`<tr><td>${escHtml(r.desc)}</td><td><span class="badge badge-g">${r.cat}</span></td><td>${r.date}</td><td style="color:var(--success)">$${r.amount.toLocaleString()}</td><td><button class="btn btn-d btn-sm" onclick="deleteFin('revenue',${r.id})">×</button></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="card"><h3 style="color:var(--error)">💸 Expenses</h3><table><thead><tr><th>Description</th><th>Category</th><th>Date</th><th>Amount</th><th></th></tr></thead><tbody>
+      ${exp.map(e=>`<tr><td>${escHtml(e.desc)}</td><td><span class="badge badge-r">${e.cat}</span></td><td>${e.date}</td><td style="color:var(--error)">$${e.amount.toLocaleString()}</td><td><button class="btn btn-d btn-sm" onclick="deleteFin('expenses',${e.id})">×</button></td></tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+
+function showFinanceModal(type){
+  openModal(`<h3>Add ${type==='revenue'?'Revenue':'Expense'}</h3>
+  <div class="field"><label>Description</label><input id="ff_desc"></div>
+  <div class="field"><label>Amount ($)</label><input id="ff_amt" type="number"></div>
+  <div class="field"><label>Category</label><input id="ff_cat" value="${type==='revenue'?'Services':'Operations'}"></div>
+  <div class="field"><label>Date</label><input id="ff_date" type="month" value="${new Date().toISOString().slice(0,7)}"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+    <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-p" onclick="saveFin('${type}')">Save</button></div>`);
+}
+
+function saveFin(type){
+  const arr=type==='revenue'?data.finances.revenue:data.finances.expenses;
+  const desc=document.getElementById('ff_desc').value.trim();
+  const amt=parseFloat(document.getElementById('ff_amt').value);
+  if(!desc||!amt)return;
+  arr.push({id:genId(arr),desc,amount:amt,date:document.getElementById('ff_date').value,type,cat:document.getElementById('ff_cat').value});
+  saveData();closeModal();renderFinances(document.getElementById('content'));
+}
+function deleteFin(type,id){const arr=type==='revenue'?'revenue':'expenses';data.finances[arr]=data.finances[arr].filter(f=>f.id!==id);saveData();renderFinances(document.getElementById('content'))}
+
+// ---------- PRODUCTS ----------
+function renderProducts(c){
+  const products=[
+    {name:'HoldOff Free',price:'$0',color:'var(--info)',features:['Basic mood tracking','Community forum access','Crisis hotline quick-dial','Daily check-ins','Limited VERDICT insights']},
+    {name:'HoldOff+',price:'$9.99/mo',color:'var(--primary-l)',features:['Full VERDICT scoring','INTERPRETER mood analysis','Personalized recovery paths','Peer matching','Progress analytics','Journal with AI insights']},
+    {name:'HoldOff Pro',price:'$19.99/mo',color:'var(--secondary)',features:['Everything in Plus','SPIRAL LOCK crisis system','Therapist integration','Family dashboard','Priority support','Advanced analytics','Custom recovery plans']},
+  ];
+  c.innerHTML=`
+  <div class="section-header"><h3>Product Tiers</h3><span class="badge badge-y">🏷️ LAUNCH50 — 50% off first 3 months</span></div>
+  <div class="grid g3">
+    ${products.map(p=>`<div class="card" style="border-top:3px solid ${p.color}">
+      <h3 style="color:${p.color}">${p.name}</h3>
+      <div class="val" style="font-size:1.5rem;color:${p.color}">${p.price}</div>
+      <ul style="list-style:none;margin-top:12px">${p.features.map(f=>`<li style="padding:4px 0;font-size:.85rem;border-bottom:1px solid var(--bg4)">✓ ${f}</li>`).join('')}</ul>
+    </div>`).join('')}
+  </div>
+  <div class="card mt-2">
+    <h3>🧠 Core Technology</h3>
+    <div class="grid g3 mt-1">
+      <div class="card" style="background:var(--bg3)"><h3 style="color:var(--accent)">VERDICT</h3><p class="text-s text-muted">AI-powered emotional state scoring using NLP and behavioral analysis. Rates emotional vulnerability 1-100 in real-time.</p></div>
+      <div class="card" style="background:var(--bg3)"><h3 style="color:var(--accent)">INTERPRETER</h3><p class="text-s text-muted">Natural Language Processing engine that analyzes journal entries and conversations to detect mood patterns and triggers.</p></div>
+      <div class="card" style="background:var(--bg3)"><h3 style="color:var(--accent)">SPIRAL LOCK</h3><p class="text-s text-muted">Crisis intervention system that activates personalized de-escalation when VERDICT detects dangerous patterns.</p></div>
+    </div>
+  </div>`;
+}
+
+// ---------- MARKETING ----------
+function renderMarketing(c){
+  c.innerHTML=`
+  <div class="section-header"><h3>Campaigns</h3><button class="btn btn-p" onclick="showCampaignModal()">+ New Campaign</button></div>
+  <div class="grid g3">
+    <div class="card stat-card"><div class="sub">Active Campaigns</div><div class="val">${data.campaigns.filter(c=>c.status==='active').length}</div></div>
+    <div class="card stat-card"><div class="sub">Total Leads</div><div class="val">${data.campaigns.reduce((s,c)=>s+c.leads,0)}</div></div>
+    <div class="card stat-card"><div class="sub">Total Budget</div><div class="val">$${data.campaigns.reduce((s,c)=>s+c.budget,0).toLocaleString()}</div></div>
+  </div>
+  <div class="card mt-2"><table><thead><tr><th>Campaign</th><th>Platform</th><th>Status</th><th>Budget</th><th>Spent</th><th>Leads</th><th></th></tr></thead><tbody>
+    ${data.campaigns.map(c=>`<tr>
+      <td>${escHtml(c.name)}</td><td>${c.platform}</td>
+      <td><span class="badge ${c.status==='active'?'badge-g':c.status==='planned'?'badge-y':'badge-b'}">${c.status}</span></td>
+      <td>$${c.budget.toLocaleString()}</td><td>$${c.spent.toLocaleString()}</td><td>${c.leads}</td>
+      <td><button class="btn btn-d btn-sm" onclick="deleteCampaign(${c.id})">×</button></td>
+    </tr>`).join('')}
+  </tbody></table></div>
+  <div class="card mt-2">
+    <h3>📅 Content Ideas</h3>
+    <div class="mt-1 text-m">
+      <div style="padding:8px 0;border-bottom:1px solid var(--bg4)">📱 Instagram: Behind-the-scenes of VERDICT AI development</div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--bg4)">🐦 Twitter/X: Mental health awareness thread series</div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--bg4)">📧 Email: Waitlist update — "Your HoldOff journey starts soon"</div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--bg4)">🎥 TikTok: "What your phone does when you're in crisis" (SPIRAL LOCK demo)</div>
+      <div style="padding:8px 0">📝 Blog: "Why AI is the future of mental health support"</div>
+    </div>
+    <button class="btn btn-p mt-2" onclick="goTo('sadie')">🤖 Ask Sadie to write content</button>
+  </div>`;
+}
+
+function showCampaignModal(){
+  openModal(`<h3>New Campaign</h3>
+  <div class="field"><label>Campaign Name</label><input id="cm_name"></div>
+  <div class="field"><label>Platform</label><select id="cm_plat"><option>Instagram</option><option>Twitter/X</option><option>TikTok</option><option>Email</option><option>Facebook</option><option>LinkedIn</option><option>Multi</option></select></div>
+  <div class="field"><label>Budget ($)</label><input id="cm_budget" type="number"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+    <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-p" onclick="saveCampaign()">Create</button></div>`);
+}
+function saveCampaign(){
+  const name=document.getElementById('cm_name').value.trim();if(!name)return;
+  data.campaigns.push({id:genId(data.campaigns),name,status:'planned',platform:document.getElementById('cm_plat').value,budget:parseFloat(document.getElementById('cm_budget').value)||0,spent:0,leads:0});
+  saveData();closeModal();renderMarketing(document.getElementById('content'));
+}
+function deleteCampaign(id){data.campaigns=data.campaigns.filter(c=>c.id!==id);saveData();renderMarketing(document.getElementById('content'))}
+
+// ---------- CONTACTS ----------
+function renderContacts(c){
+  c.innerHTML=`
+  <div class="section-header"><h3>CRM & Contacts</h3><button class="btn btn-p" onclick="showContactModal()">+ Add Contact</button></div>
+  <div class="grid g3">
+    ${data.contacts.map(ct=>`
+    <div class="card">
+      <div class="flex-between"><strong>${escHtml(ct.name)}</strong><span class="badge ${ct.type==='investor'?'badge-g':ct.type==='advisor'?'badge-b':'badge-y'}">${ct.type}</span></div>
+      <div class="text-s text-muted mt-1">${ct.role}</div>
+      <div class="text-s mt-1">${ct.email||''}</div>
+      ${ct.notes?`<div class="text-s text-muted mt-1">${escHtml(ct.notes)}</div>`:''}
+      <div style="margin-top:8px;display:flex;gap:4px">
+        <button class="btn btn-o btn-sm" onclick="editContact(${ct.id})">✏️</button>
+        <button class="btn btn-d btn-sm" onclick="deleteContact(${ct.id})">×</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+function showContactModal(ct){
+  const c=ct||{name:'',role:'',email:'',type:'partner',notes:''};
+  openModal(`<h3>${ct?'Edit':'New'} Contact</h3>
+  <div class="field"><label>Name</label><input id="ct_name" value="${escHtml(c.name)}"></div>
+  <div class="field"><label>Role</label><input id="ct_role" value="${escHtml(c.role)}"></div>
+  <div class="field"><label>Email</label><input id="ct_email" value="${c.email||''}"></div>
+  <div class="field"><label>Type</label><select id="ct_type"><option ${c.type==='investor'?'selected':''}>investor</option><option ${c.type==='advisor'?'selected':''}>advisor</option><option ${c.type==='partner'?'selected':''}>partner</option><option ${c.type==='customer'?'selected':''}>customer</option><option ${c.type==='team'?'selected':''}>team</option></select></div>
+  <div class="field"><label>Notes</label><textarea id="ct_notes">${escHtml(c.notes||'')}</textarea></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+    <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-p" onclick="saveContact(${ct?ct.id:0})">Save</button></div>`);
+}
+function saveContact(id){
+  const name=document.getElementById('ct_name').value.trim();if(!name)return;
+  const obj={name,role:document.getElementById('ct_role').value,email:document.getElementById('ct_email').value,type:document.getElementById('ct_type').value,notes:document.getElementById('ct_notes').value};
+  if(id){const c=data.contacts.find(c=>c.id===id);if(c)Object.assign(c,obj)}
+  else{obj.id=genId(data.contacts);data.contacts.push(obj)}
+  saveData();closeModal();renderContacts(document.getElementById('content'));
+}
+function editContact(id){showContactModal(data.contacts.find(c=>c.id===id))}
+function deleteContact(id){data.contacts=data.contacts.filter(c=>c.id!==id);saveData();renderContacts(document.getElementById('content'))}
+
+// ---------- FUNDRAISING ----------
+function renderFundraising(c){
+  const total=data.fundraising.reduce((s,f)=>s+f.amount,0);
+  const received=data.fundraising.filter(f=>f.status==='Received').reduce((s,f)=>s+f.amount,0);
+  const weighted=data.fundraising.reduce((s,f)=>s+(f.amount*f.probability/100),0);
+  c.innerHTML=`
+  <div class="section-header"><h3>Fundraising Pipeline</h3><button class="btn btn-p" onclick="showFundModal()">+ Add Opportunity</button></div>
+  <div class="grid g4">
+    <div class="card stat-card"><div class="sub">Pipeline Total</div><div class="val">$${total.toLocaleString()}</div></div>
+    <div class="card stat-card"><div class="sub">Received</div><div class="val" style="color:var(--success)">$${received.toLocaleString()}</div></div>
+    <div class="card stat-card"><div class="sub">Weighted Value</div><div class="val" style="color:var(--info)">$${Math.round(weighted).toLocaleString()}</div></div>
+    <div class="card stat-card"><div class="sub">Opportunities</div><div class="val">${data.fundraising.length}</div></div>
+  </div>
+  <div class="card mt-2"><table><thead><tr><th>Source</th><th>Type</th><th>Amount</th><th>Status</th><th>Probability</th><th></th></tr></thead><tbody>
+    ${data.fundraising.map(f=>`<tr>
+      <td>${escHtml(f.source)}</td><td>${f.type}</td><td>$${f.amount.toLocaleString()}</td>
+      <td><span class="badge ${f.status==='Received'?'badge-g':f.status==='Applied'||f.status==='Pitching'?'badge-y':'badge-b'}">${f.status}</span></td>
+      <td><div class="progress-bar" style="width:80px;display:inline-block"><div class="progress-fill" style="width:${f.probability}%"></div></div> ${f.probability}%</td>
+      <td><button class="btn btn-d btn-sm" onclick="deleteFund(${f.id})">×</button></td>
+    </tr>`).join('')}
+  </tbody></table></div>`;
+}
+function showFundModal(){
+  openModal(`<h3>New Fundraising Opportunity</h3>
+  <div class="field"><label>Source</label><input id="fu_src"></div>
+  <div class="field"><label>Type</label><select id="fu_type"><option>Grant</option><option>Investment</option><option>Loan</option><option>Competition</option></select></div>
+  <div class="field"><label>Amount ($)</label><input id="fu_amt" type="number"></div>
+  <div class="field"><label>Status</label><select id="fu_st"><option>Researching</option><option>Applied</option><option>Pitching</option><option>Negotiating</option><option>Received</option><option>Rejected</option></select></div>
+  <div class="field"><label>Probability (%)</label><input id="fu_prob" type="number" value="20"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+    <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-p" onclick="saveFund()">Save</button></div>`);
+}
+function saveFund(){
+  const source=document.getElementById('fu_src').value.trim();if(!source)return;
+  data.fundraising.push({id:genId(data.fundraising),source,type:document.getElementById('fu_type').value,amount:parseFloat(document.getElementById('fu_amt').value)||0,status:document.getElementById('fu_st').value,probability:parseInt(document.getElementById('fu_prob').value)||20});
+  saveData();closeModal();renderFundraising(document.getElementById('content'));
+}
+function deleteFund(id){data.fundraising=data.fundraising.filter(f=>f.id!==id);saveData();renderFundraising(document.getElementById('content'))}
+
+// ---------- TECH ----------
+function renderTech(c){
+  c.innerHTML=`
+  <div class="section-header"><h3>Technology & Development</h3></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>🏗️ Tech Stack</h3>
+      <div class="mt-1">
+        ${[{cat:'Frontend',items:['React Native','Expo','TypeScript']},{cat:'Backend',items:['Node.js','Express','PostgreSQL']},{cat:'AI/ML',items:['TensorFlow','Python','NLP Pipeline']},{cat:'Cloud',items:['AWS','Docker','CI/CD']},{cat:'Analytics',items:['Mixpanel','Sentry','DataDog']}].map(s=>`
+        <div style="margin-bottom:12px"><div class="text-s" style="color:var(--primary-l);font-weight:700;margin-bottom:4px">${s.cat}</div>
+        <div class="flex-wrap">${s.items.map(i=>`<span class="badge badge-p">${i}</span>`).join('')}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>🗺️ Development Roadmap</h3>
+      <div class="mt-1">
+        ${[
+          {phase:'Phase 1 — Foundation',status:'done',items:['Core app architecture','User auth & profiles','Basic mood tracking','Database schema']},
+          {phase:'Phase 2 — AI Core',status:'doing',items:['VERDICT algorithm v1','INTERPRETER NLP engine','Crisis detection model','Sentiment analysis']},
+          {phase:'Phase 3 — Features',status:'todo',items:['SPIRAL LOCK system','Peer matching','Therapist portal','Payment integration']},
+          {phase:'Phase 4 — Launch',status:'todo',items:['App Store submission','Beta testing','Marketing launch','Scale infrastructure']},
+        ].map(p=>`
+        <div style="margin-bottom:16px;padding:12px;background:var(--bg3);border-radius:8px;border-left:3px solid ${p.status==='done'?'var(--success)':p.status==='doing'?'var(--warning)':'var(--text3)'}">
+          <div class="flex-between"><strong class="text-m">${p.phase}</strong><span class="badge ${p.status==='done'?'badge-g':p.status==='doing'?'badge-y':'badge-b'}">${p.status==='done'?'Complete':p.status==='doing'?'In Progress':'Planned'}</span></div>
+          <div class="mt-1">${p.items.map(i=>`<div class="text-s" style="padding:2px 0">• ${i}</div>`).join('')}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="card mt-2">
+    <h3>🔗 Key API Routes</h3>
+    <table><thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead><tbody>
+    ${[
+      ['POST','/api/auth/register','User registration'],['POST','/api/auth/login','Authentication'],
+      ['GET','/api/mood/history','Mood tracking data'],['POST','/api/mood/entry','Log mood entry'],
+      ['GET','/api/verdict/score','Get VERDICT score'],['POST','/api/interpreter/analyze','NLP analysis'],
+      ['POST','/api/spiral-lock/activate','Trigger crisis mode'],['GET','/api/analytics/dashboard','User analytics'],
+    ].map(r=>`<tr><td><span class="badge ${r[0]==='GET'?'badge-g':'badge-y'}">${r[0]}</span></td><td class="text-s" style="font-family:monospace">${r[1]}</td><td class="text-s">${r[2]}</td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+
+// ---------- NOTES ----------
+function renderNotes(c){
+  c.innerHTML=`
+  <div class="section-header"><h3>Notes</h3><button class="btn btn-p" onclick="showNoteModal()">+ New Note</button></div>
+  <div class="grid g2">
+    ${data.notes.map(n=>`
+    <div class="card">
+      <div class="flex-between"><strong>${escHtml(n.title)}</strong><span class="badge badge-p">${n.cat}</span></div>
+      <div class="text-s text-muted">${n.date}</div>
+      <div class="text-m mt-1" style="white-space:pre-wrap;max-height:200px;overflow-y:auto">${escHtml(n.content)}</div>
+      <div style="margin-top:8px;display:flex;gap:4px">
+        <button class="btn btn-o btn-sm" onclick="editNote(${n.id})">✏️ Edit</button>
+        <button class="btn btn-d btn-sm" onclick="deleteNote(${n.id})">🗑️</button>
+      </div>
+    </div>`).join('')}
+    ${data.notes.length===0?'<div class="empty" style="grid-column:1/-1">No notes yet. Create one!</div>':''}
+  </div>`;
+}
+function showNoteModal(note){
+  const n=note||{title:'',cat:'General',content:''};
+  openModal(`<h3>${note?'Edit':'New'} Note</h3>
+  <div class="field"><label>Title</label><input id="nt_title" value="${escHtml(n.title)}"></div>
+  <div class="field"><label>Category</label><select id="nt_cat"><option ${n.cat==='General'?'selected':''}>General</option><option ${n.cat==='Operations'?'selected':''}>Operations</option><option ${n.cat==='Fundraising'?'selected':''}>Fundraising</option><option ${n.cat==='Marketing'?'selected':''}>Marketing</option><option ${n.cat==='Product'?'selected':''}>Product</option><option ${n.cat==='Tech'?'selected':''}>Tech</option></select></div>
+  <div class="field"><label>Content</label><textarea id="nt_content" style="min-height:150px">${escHtml(n.content)}</textarea></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+    <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-p" onclick="saveNote(${note?note.id:0})">Save</button></div>`);
+}
+function saveNote(id){
+  const title=document.getElementById('nt_title').value.trim();if(!title)return;
+  const obj={title,cat:document.getElementById('nt_cat').value,content:document.getElementById('nt_content').value,date:new Date().toISOString().slice(0,10)};
+  if(id){const n=data.notes.find(n=>n.id===id);if(n)Object.assign(n,obj)}
+  else{obj.id=genId(data.notes);data.notes.push(obj)}
+  saveData();closeModal();renderNotes(document.getElementById('content'));
+}
+function editNote(id){showNoteModal(data.notes.find(n=>n.id===id))}
+function deleteNote(id){data.notes=data.notes.filter(n=>n.id!==id);saveData();renderNotes(document.getElementById('content'))}
+
+// ---------- ANALYTICS ----------
+function renderAnalytics(c){
+  const months=['Jan','Feb','Mar','Apr','May','Jun'];
+  const revByMonth=[800,1200,1800,25000+1500,2400,2400];
+  const maxRev=Math.max(...revByMonth);
+  c.innerHTML=`
+  <div class="section-header"><h3>Business Analytics</h3></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>📈 Revenue Trend</h3>
+      <div class="chart-bar">${months.map((m,i)=>`<div class="bar-wrap"><div class="bar-val">$${(revByMonth[i]/1000).toFixed(1)}k</div><div class="bar" style="height:${(revByMonth[i]/maxRev*160)}px"></div><div class="bar-label">${m}</div></div>`).join('')}</div>
+    </div>
+    <div class="card">
+      <h3>🎯 Key Metrics</h3>
+      <div class="mt-1">
+        ${[
+          {label:'Waitlist Growth Rate',val:'+12% mo/mo',color:'var(--success)'},
+          {label:'Estimated CAC',val:'$8.50',color:'var(--info)'},
+          {label:'Projected LTV',val:'$180',color:'var(--success)'},
+          {label:'LTV:CAC Ratio',val:'21:1',color:'var(--success)'},
+          {label:'Monthly Burn',val:'$3,525',color:'var(--warning)'},
+          {label:'Runway',val:'8.2 months',color:'var(--warning)'},
+        ].map(m=>`<div class="flex-between" style="padding:8px 0;border-bottom:1px solid var(--bg4)"><span class="text-m">${m.label}</span><span style="color:${m.color};font-weight:600">${m.val}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="grid g2 mt-2">
+    <div class="card">
+      <h3>🏆 Milestones</h3>
+      <div class="mt-1">
+        ${[{m:'1,000 waitlist signups',done:true},{m:'First grant received ($50K)',done:true},{m:'VERDICT v1 beta',done:false},{m:'2,500 waitlist signups',done:true},{m:'App Store submission',done:false},{m:'$500K seed round',done:false},{m:'10,000 users',done:false}].map(m=>`
+        <div style="padding:6px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bg4)">
+          <span style="color:${m.done?'var(--success)':'var(--text3)'}">${m.done?'✅':'⬜'}</span>
+          <span class="text-m" style="${m.done?'text-decoration:line-through;opacity:.6':''}">${m.m}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>📊 Market Position</h3>
+      <div class="mt-1">
+        <div class="flex-between mb-1"><span class="text-m">TAM (Total Addressable Market)</span><span style="font-weight:700">$4.2B</span></div>
+        <div class="flex-between mb-1"><span class="text-m">SAM (Serviceable)</span><span style="font-weight:700">$1.1B</span></div>
+        <div class="flex-between mb-1"><span class="text-m">SOM (Obtainable)</span><span style="font-weight:700">$50M</span></div>
+        <div class="mt-2"><strong class="text-m">Competitive Advantages:</strong></div>
+        ${['AI-powered crisis detection (VERDICT)','Real-time NLP mood analysis','Integrated peer support network','Culturally competent design','Affordable pricing model'].map(a=>`<div class="text-s" style="padding:3px 0">🛡️ ${a}</div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---------- SETTINGS ----------
+function renderSettings(c){
+  c.innerHTML=`
+  <div class="section-header"><h3>Settings & Data</h3></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>💾 Export Data</h3>
+      <p class="text-s text-muted mt-1">Download all your HoldOff data as a JSON file. Use this to back up or transfer to another device.</p>
+      <button class="btn btn-p mt-2" onclick="exportData()">📥 Export All Data</button>
+    </div>
+    <div class="card">
+      <h3>📤 Import Data</h3>
+      <p class="text-s text-muted mt-1">Restore from a previous export. This will replace all current data.</p>
+      <input type="file" id="importFile" accept=".json" style="margin-top:12px" onchange="importData(event)">
+    </div>
+    <div class="card">
+      <h3>🗑️ Reset Data</h3>
+      <p class="text-s text-muted mt-1">Reset everything to defaults. This cannot be undone!</p>
+      <button class="btn btn-d mt-2" onclick="resetData()">Reset to Defaults</button>
+    </div>
+    <div class="card">
+      <h3>ℹ️ About</h3>
+      <div class="mt-1 text-m">
+        <div><strong>HoldOff Business Suite</strong></div>
+        <div class="text-muted">Powered by Super Sadie ⚡</div>
+        <div class="text-muted mt-1">Version 2.0</div>
+        <div class="text-muted">20 AI Engine Support</div>
+        <div class="text-muted mt-1">Built with 💛 by Sadie for Stacy</div>
+        <div class="text-muted">© 2026 HoldOff. All rights reserved.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card mt-2">
+    <h3>⚡ AI Provider Status</h3>
+    <div class="ai-grid mt-1">
+      ${AI_PROVIDERS.map(p=>`
+      <div class="ai-card">
+        <div><span class="ai-status-dot ${data.aiKeys[p.id]?'on':'no-key'}"></span><strong class="ai-name">${p.name}</strong></div>
+        <div class="ai-provider">${data.aiKeys[p.id]?'✓ Connected':'No key set'}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`holdoff_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{data=JSON.parse(ev.target.result);saveData();renderPage();alert('Data imported successfully!')}
+    catch(e){alert('Invalid file format')}
+  };reader.readAsText(file);
+}
+function resetData(){if(confirm('Reset ALL data to defaults? This cannot be undone!')){data=JSON.parse(JSON.stringify(DEFAULT_DATA));saveData();renderPage()}}
+
+// ==================== INIT ====================
+renderNav();
+renderPage();
+</script>
+</body>
+</html>
