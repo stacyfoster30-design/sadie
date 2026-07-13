@@ -45,11 +45,11 @@ jobs:
           # on Ubuntu 24 treats unrecognised m4_defun macros as fatal errors.
           # autoreconf hardcodes the path /usr/bin/autoconf at runtime, so the
           # AUTOCONF env var and a /usr/local/bin wrapper are both bypassed.
-          # Replace /usr/bin/autoconf in-place with a wrapper that adds
-          # --warnings=no-error, demoting the "possibly undefined macro" check
-          # from a fatal error to a warning.
+          # Replace /usr/bin/autoconf in-place with a wrapper that appends
+          # --warnings=no-error AFTER all caller-supplied args, so it wins even
+          # when autoreconf injects its own --warnings=error earlier in the argv.
           sudo mv /usr/bin/autoconf /usr/bin/autoconf.real
-          printf '#!/bin/bash\nexec /usr/bin/autoconf.real --warnings=no-error "$@"\n' | \
+          printf '#!/bin/bash\nexec /usr/bin/autoconf.real "$@" --warnings=no-error\n' | \
             sudo tee /usr/bin/autoconf > /dev/null
           sudo chmod +x /usr/bin/autoconf
 
@@ -66,7 +66,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .buildozer
-          key: v1-buildozer-local-${{ hashFiles('buildozer.spec') }}
+          key: v2-buildozer-local-${{ hashFiles('buildozer.spec') }}
+
+      - name: Clean buildozer app artifacts
+        run: buildozer appclean
 
       - name: Build debug APK
         run: buildozer android debug
