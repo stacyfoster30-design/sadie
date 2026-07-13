@@ -26,10 +26,13 @@ Evaluate:
 
 from __future__ import annotations
 
+import inspect
 import json
 import os
+import platform
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Optional
 
@@ -150,7 +153,6 @@ def run_python(code: str) -> str:
     _, actions = _get_state()
     if actions:
         return actions.run_python(code)
-    import tempfile
     try:
         with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as fh:
             fh.write(code)
@@ -354,7 +356,6 @@ def system_info() -> str:
     _, actions = _get_state()
     if actions:
         return actions.system_info()
-    import platform
     return f"OS: {platform.system()} {platform.release()}, Python: {platform.python_version()}"
 
 
@@ -444,7 +445,6 @@ def run_with_gemini(goal: str, api_key: str | None = None) -> str:
     tool_map = {fn.__name__: fn for fn in _TOOLS}
     genai_tools = []
     for fn in _TOOLS:
-        import inspect
         sig = inspect.signature(fn)
         props: dict = {}
         required: list = []
