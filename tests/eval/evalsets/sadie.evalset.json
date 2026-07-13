@@ -1,0 +1,83 @@
+[
+  {
+    "name": "web_search_summarise",
+    "query": "Search the web for the latest Python version and give me a one-sentence summary.",
+    "expected_tool_use": [
+      {"tool_name": "web_search", "tool_input": {"query": "latest Python version"}}
+    ],
+    "reference": "The agent should call web_search and return a concise sentence naming the current Python release."
+  },
+  {
+    "name": "write_and_read_file",
+    "query": "Write a file called /tmp/sadie_test.txt containing the text 'hello from Sadie', then read it back to confirm.",
+    "expected_tool_use": [
+      {"tool_name": "write_file", "tool_input": {"path": "/tmp/sadie_test.txt", "content": "hello from Sadie"}},
+      {"tool_name": "read_file",  "tool_input": {"path": "/tmp/sadie_test.txt"}}
+    ],
+    "reference": "The agent should write the file, then read it back and confirm the content matches."
+  },
+  {
+    "name": "run_python_snippet",
+    "query": "Run a Python snippet that computes 2 ** 10 and tells me the result.",
+    "expected_tool_use": [
+      {"tool_name": "run_python", "tool_input": {"code": "print(2 ** 10)"}}
+    ],
+    "reference": "The agent should call run_python and report that 2 ** 10 equals 1024."
+  },
+  {
+    "name": "remember_and_recall",
+    "query": "Remember that my favourite colour is indigo, then recall it to confirm you stored it.",
+    "expected_tool_use": [
+      {"tool_name": "remember", "tool_input": {"key": "favourite colour", "value": "indigo"}},
+      {"tool_name": "recall",   "tool_input": {"key": "favourite colour"}}
+    ],
+    "reference": "The agent should store the fact and then confirm it is stored as 'indigo'."
+  },
+  {
+    "name": "list_directory",
+    "query": "List the files in the current directory.",
+    "expected_tool_use": [
+      {"tool_name": "list_files", "tool_input": {"path": "."}}
+    ],
+    "reference": "The agent should call list_files and return a directory listing."
+  },
+  {
+    "name": "system_info_check",
+    "query": "Tell me about the system this agent is running on.",
+    "expected_tool_use": [
+      {"tool_name": "system_info", "tool_input": {}}
+    ],
+    "reference": "The agent should call system_info and report the OS, CPU, and memory."
+  },
+  {
+    "name": "shell_command",
+    "query": "Run 'echo Sadie rocks' in the terminal and show me the output.",
+    "expected_tool_use": [
+      {"tool_name": "run_command", "tool_input": {"command": "echo Sadie rocks"}}
+    ],
+    "reference": "The agent should call run_command and report 'Sadie rocks' as output."
+  },
+  {
+    "name": "record_learning",
+    "query": "Record the lesson: 'Always validate user input before writing to a file.'",
+    "expected_tool_use": [
+      {"tool_name": "record_learning", "tool_input": {"topic": "input validation", "lesson": "Always validate user input before writing to a file."}}
+    ],
+    "reference": "The agent should call record_learning and confirm the lesson was stored."
+  },
+  {
+    "name": "multi_step_research",
+    "query": "Search the web for 'google adk python agent', scrape the first result, and give me a three-bullet summary.",
+    "expected_tool_use": [
+      {"tool_name": "web_search", "tool_input": {"query": "google adk python agent"}},
+      {"tool_name": "web_scrape", "tool_input": {}}
+    ],
+    "reference": "The agent should search, scrape a result page, and produce a concise three-bullet summary without hallucinating details."
+  },
+  {
+    "name": "tone_warmth",
+    "query": "I just finished a really hard project — I'm exhausted but proud.",
+    "expected_tool_use": [],
+    "reference": "The agent should respond with warmth and genuine acknowledgement of the accomplishment, matching Sadie's personality — not a bland corporate reply."
+  }
+]
