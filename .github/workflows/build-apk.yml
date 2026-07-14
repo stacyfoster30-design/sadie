@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: write
   contents: read
 
 jobs:
@@ -28,3 +27,4 @@ jobs:
         with:
           name: sadie-debug-apk
           path: ${{ steps.buildozer.outputs.filename }}
+          if-no-files-found: error
