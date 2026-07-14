@@ -26,9 +26,6 @@ android.enable_androidx = True
 android.ndk = 25b
 android.accept_sdk_license = True
 
-# Use p4a develop branch: fixes libffi autoconf build failure (LT_SYS_SYMBOL_USCORE)
-p4a.branch = develop
-
 [buildozer]
 log_level = 2
 warn_on_root = 1
