@@ -8,25 +8,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: ubuntu:22.04
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
       - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev automake
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            python3 python3-pip python3-venv python3-setuptools git zip unzip \
+            openjdk-17-jdk autoconf automake libtool libtool-bin pkg-config \
+            zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev \
+            build-essential ccache wget curl sudo
 
       - name: Install buildozer
-        run: pip install buildozer cython==0.29.36
+        run: pip3 install buildozer cython==0.29.36
 
       - name: Cache buildozer directories
         uses: actions/cache@v4
@@ -34,10 +30,10 @@ jobs:
           path: |
             ~/.buildozer
             .buildozer
-          key: buildozer-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-u2204-${{ hashFiles('buildozer.spec') }}
 
       - name: Build APK
-        run: buildozer android debug
+        run: yes | buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
