@@ -1,5 +1,5 @@
 [app]
-# 💜 Sadie — Android App Config
+# Sadie - Android App Config
 
 title = Sadie
 package.name = sadie
