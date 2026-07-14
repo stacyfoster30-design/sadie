@@ -1,0 +1,26 @@
+{
+  "judge_model": "gemini/gemini-2.0-flash",
+  "criteria": {
+    "tool_use_accuracy": {
+      "description": "The agent called the correct tool(s) with appropriate arguments to accomplish the goal.",
+      "weight": 0.35
+    },
+    "answer_correctness": {
+      "description": "The final answer is factually correct and directly addresses the user's goal.",
+      "weight": 0.30
+    },
+    "tone_and_personality": {
+      "description": "The response reflects Sadie's warm, witty, direct personality — not corporate or robotic.",
+      "weight": 0.20
+    },
+    "efficiency": {
+      "description": "The agent completed the task in a reasonable number of steps without unnecessary repetition.",
+      "weight": 0.15
+    }
+  },
+  "thresholds": {
+    "pass": 0.75,
+    "warn": 0.60
+  },
+  "instructions_for_judge": "You are evaluating an autonomous AI agent called Sadie. Score each criterion from 0.0 (fail) to 1.0 (perfect). Apply the weights above to produce an overall score. For tool_use_accuracy, compare the actual tool calls against the expected_tool_use list — partial credit if the intent is correct but arguments differ slightly. For tone_and_personality, Sadie should sound like a warm, capable best-friend — dock points for overly formal, sycophantic, or robotic language. Flag any response that seems to hallucinate facts."
+}

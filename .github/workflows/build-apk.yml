@@ -1,0 +1,37 @@
+name: Build Sadie APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ubuntu:22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            python3 python3-pip python3-venv python3-setuptools git zip unzip \
+            openjdk-17-jdk autoconf automake libtool libtool-bin pkg-config \
+            zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev \
+            build-essential ccache wget curl sudo
+
+      - name: Install buildozer
+        run: pip3 install buildozer cython==0.29.36
+
+      - name: Remove stale committed build artifacts
+        run: rm -rf .buildozer __pycache__ bin
+
+      - name: Build APK
+        run: yes | buildozer android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sadie-debug-apk
+          path: bin/*.apk
