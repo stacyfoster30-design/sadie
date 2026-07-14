@@ -1,29 +1,27 @@
 name: Build Android APK
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
+on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
-    container:
-      image: ghcr.io/kivy/buildozer:latest
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip3 install --user --upgrade buildozer cython
 
       - name: Build with Buildozer
-        run: buildozer android debug
+        env:
+          BUILDOZER_ALLOW_ROOT: 1
+        run: |
+          export PATH=$PATH:$HOME/.local/bin
+          buildozer android debug
 
-      - name: Upload artifacts
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: sadie-debug-apk
+          name: sadie-apk
           path: bin/*.apk
-          if-no-files-found: error
