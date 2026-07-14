@@ -1,9 +1,4 @@
-# 💜 Build Sadie's Android APK on GitHub-hosted runners.
-# GitHub runners can reach the Android SDK/NDK and Apache Ant download
-# servers, so buildozer can fetch the full toolchain here (unlike sandboxes
-# where dl.google.com / archive.apache.org are firewall-blocked).
-name: Build APK
-
+name: Build Android APK
 on:
   push:
     branches: [main]
@@ -18,62 +13,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
         with:
-          python-version: "3.11"
+          buildozer_version: stable
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            build-essential git zip unzip \
-            autoconf automake libtool libtool-bin pkg-config \
-            zlib1g-dev libncurses-dev libtinfo6 \
-            cmake libffi-dev libssl-dev
-          # python-for-android's libffi recipe uses an old configure.ac that calls
-          # LT_SYS_SYMBOL_USCORE (a libtool-internal m4_defun macro).  autoconf 2.71+
-          # on Ubuntu 24 treats unrecognised m4_defun macros as fatal errors.
-          # autoreconf hardcodes the path /usr/bin/autoconf at runtime, so the
-          # AUTOCONF env var and a /usr/local/bin wrapper are both bypassed.
-          # Replace /usr/bin/autoconf in-place with a wrapper that adds
-          # --warnings=no-error, demoting the "possibly undefined macro" check
-          # from a fatal error to a warning.
-          sudo mv /usr/bin/autoconf /usr/bin/autoconf.real
-          printf '#!/bin/bash\nexec /usr/bin/autoconf.real --warnings=no-error "$@"\n' | \
-            sudo tee /usr/bin/autoconf > /dev/null
-          sudo chmod +x /usr/bin/autoconf
-
-      - name: Install buildozer
-        run: pip install --upgrade buildozer cython
-
-      - name: Cache buildozer global directory
-        uses: actions/cache@v4
-        with:
-          path: ~/.buildozer
-          key: v1-buildozer-global-${{ hashFiles('buildozer.spec') }}
-
-      - name: Cache buildozer local directory
-        uses: actions/cache@v4
-        with:
-          path: .buildozer
-          key: v1-buildozer-local-${{ hashFiles('buildozer.spec') }}
-
-      - name: Build debug APK
-        run: buildozer android debug
-
-      - name: Upload APK artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sadie-debug-apk
-          path: bin/*.apk
+          path: ${{ steps.buildozer.outputs.filename }}
           if-no-files-found: error
